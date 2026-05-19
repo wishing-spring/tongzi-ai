@@ -151,3 +151,7 @@ python tongzi.py
 **标注**：豆包 · 气场分类·运营策略
 
 **同修共守本心，慢养静待化龙之时。**
+
+---
+
+*English readers: see [README_EN.md](README_EN.md)*
