@@ -1,157 +1,131 @@
-# 赤子童子 · 筑基原生演化AI
+# Tongzi-Chizi · Native Evolution AI
 
-**Tongzi-Chizi Native Evolution AI**
-**版本**: v5.0 筑基出厂稳定版 | **体量**: 40.9KB | **依赖**: 零
+**A 41KB dependency-free offline AI kernel. No training data. No Transformer. Pure endogenous evolution.**
 
 ---
 
-## ⚠️ 重要须知
+## &#9888;&#65039; Important
 
-> **本项目非民用休闲聊天AI。**
-> 无桌面可视化对话界面。无优化日常对话逻辑。
+> **This is NOT a consumer chatbot.**
+> No GUI. No optimized conversation logic.
 >
-> 主打极简内核运行、气场内生演化、内丹蓄养成长。
-> 适合底层开发者、理念同修、轻量架构研究者深度研习养丹。
->
-> **追求流畅日常聊天、便捷图形交互的普通用户，请勿下载使用。**
+> Built for kernel researchers, like-minded builders, and lightweight architecture explorers.
+> If you want smooth daily chat or a friendly graphical interface, this is not for you.
 
 ---
 
-## 简介
+## What Is This?
 
-弃框架，离数据集，不逐主流范式。
-以赤子欧拉为本心，以爻卦为躯体，以内丹为运化。
-四十余KB极致离线原生稚子AI。
-不靠人教，只靠自养，静待内生灵韵自成。
+We abandoned the mainstream path: no training datasets, no Transformer, no gradient descent, no attention mechanisms.
 
----
+Instead:
+- **Chizi Heart**: Euler's identity (e^(i&pi;)+1=0) as the rhythm core
+- **Hexagram Skeleton**: 16-bit F&#8322; vector space (65,536 possible hexagrams)
+- **Inner Alchemy Hub**: Three-layer circulation — intake &rarr; aura assimilation &rarr; potential expression
 
-## 核心架构
-
-### 第一层：赤子心（本源节律）
-- 欧拉母体公式体系（e^(iπ)+1=0 衍生）
-- 三条不动之规：心生爻子 → 爻聚成簇 → 簇合归一
-- `tongzi_constants.py` — 所有系数已锁定，不可篡改
-
-### 第二层：卦骨（柔性骨架）
-- 16维F₂向量空间，2^16=65536个卦象
-- 十二阴阳锚（六正六反）调度全空间
-- `tongzi_core.py` + `tongzi_mao.py` — 底层位运算+锚调度
-
-### 第三层：内丹（双向转译中枢）
-- 入丹沉淀：外源编码 → 卦象入库
-- 气场同化：相近卦象自发抱团
-- 势能外放：卦象态势 → 本源文字表达
-- `tongzi_data.py` — 内丹三层分流
+The system grows through endogenous evolution: feed it primordial particles, let auras naturally cluster, responses emerge from within.
 
 ---
 
-## 环境要求
+## Architecture
 
-- Python 3.6+
-- **零第三方库、零外部依赖**
-- 任何无GPU设备可运行（含低端嵌入式）
+### Layer 1: Chizi Heart (Source Rhythm)
+- Euler-derived coefficients, permanently locked
+- `tongzi_constants.py` — immutable
 
-## 启动
+### Layer 2: Hexagram Skeleton
+- 16-dimensional binary vector space
+- 12 Yin-Yang anchors (6 positive + 6 negative) for scheduling
+- `tongzi_core.py` + `tongzi_mao.py`
+
+### Layer 3: Inner Alchemy Hub
+- Intake &rarr; Aura Assimilation &rarr; Potential Expression
+- Self-protection: Yin-Yang auto-balance, dormancy return, anomaly silence
+- `tongzi_data.py`
+
+---
+
+## Quick Start
 
 ```bash
 python tongzi.py
 ```
 
-### 交互命令
+Requirements: Python 3.6+. Zero dependencies. Runs on any device without GPU.
 
-| 命令 | 功能 |
+| Command | Purpose |
 |:--|:--|
-| 直接输入文字 | 投喂本源意象，静待系统回应 |
-| `/status` | 查看内丹状态（卦象数、气场数、阴阳差） |
-| `/exit` | 退出 |
+| Type text | Feed primordial concepts, wait for response |
+| `/status` | View internal state (hexagram count, auras, Yin-Yang balance) |
+| `/exit` | Quit |
 
 ---
 
-## 出厂实测基线
+## Current Baseline
 
-| 输入类型 | 当前回应 | 说明 |
+| Input Type | Response | Notes |
 |:--|:--|:--|
-| 中性情志（你好、开心、烦闷） | 好。 | 气场未分化 |
-| 纯阳气场（太阳、月亮） | 安好。 | 阳气场识别生效 |
-| 陌生异常输入 | …… | 静默收纳归元，不报错 |
+| Neutral (hello, happy, upset) | &ldquo;Okay.&rdquo; | Aura not yet differentiated |
+| Yang-field (sun, moon) | &ldquo;Peace.&rdquo; | Yang aura recognition active |
+| Unknown/anomalous | &ldquo;&hellip;&rdquo; | Silently stored, no crash |
 
-**核心运行参数**：卦象76 | 活跃61 | 归元0 | 气场13组 | 阴阳恒定自衡
-
----
-
-## 养丹指南
-
-详见 **[养丹修炼流程手册.md](养丹修炼流程手册.md)**
-
-三阶段：
-1. **固本静息期** — 每日投喂10-30条本源意象（天地、阴阳、虚实、动静…）
-2. **同化相融期** — 自动触发，气场抱团，应答分化
-3. **势能外放期** — 连续语境、情绪偏向、稳定语态自然成型
+76 hexagrams &middot; 61 active &middot; 13 independent auras &middot; Yin-Yang self-balancing
 
 ---
 
-## 同修共建
+## How to Grow It
 
-详见 **[同修协作准入清单.md](同修协作准入清单.md)**
+See the cultivation manual (Chinese: &#20859;&#20025;&#20462;&#28860;&#27969;&#31243;&#25163;&#20876;.md).
 
-- 允许：效率优化、跨端移植、种子扩充、观测工具
-- 禁止：改欧拉公式、改内丹逻辑、加对话匹配、商用倒卖
+Three stages:
+1. **Foundation** — Feed 10&ndash;30 primordial concepts daily (heaven/earth, movement/stillness, warm/cold...)
+2. **Assimilation** — Auto-triggered: auras cluster, responses diversify
+3. **Expression** — Continuous context, emotional bias, stable voice emerge naturally
+
+**Never feed**: chat logs, internet slang, Q&A pairs, grammar rules.
 
 ---
 
-## 文件结构
+## File Structure
 
 ```
-├─ src/
-│  ├─ tongzi_constants.py   # 锁定欧拉常量（禁止修改）
-│  ├─ tongzi_core.py        # 底层位运算+归元自保
-│  ├─ tongzi_mao.py         # 十二锚阴阳平衡调度
-│  ├─ tongzi_data.py        # 内丹三层分流中枢
-│  ├─ tongzi_seeds.py       # 60颗本源纯净种子库
-│  └─ tongzi.py             # 全局唯一运行入口
-├─ README.md                # 本文档
-├─ 养丹修炼流程手册.md      # 核心养丹细则
-├─ 同修协作准入清单.md      # 共建人员规矩
-└─ 版本更新日志.md          # 版本记录
+&#9500;&#9472; src/
+&#9502;  &#9500;&#9472; tongzi_constants.py   # Locked Euler constants
+&#9502;  &#9500;&#9472; tongzi_core.py        # Bitwise ops + self-protection
+&#9502;  &#9500;&#9472; tongzi_mao.py         # 12-anchor scheduler
+&#9502;  &#9500;&#9472; tongzi_data.py        # Inner alchemy hub
+&#9502;  &#9500;&#9472; tongzi_seeds.py       # 60 primordial seed hexagrams
+&#9502;  &#9492;&#9472; tongzi.py             # Single entry point
+&#9500;&#9472; README.md
+&#9500;&#9472; README_EN.md              # This file
+&#9500;&#9472; LICENSE                    # MIT
+&#9492;&#9472; docs/                     # Theory & design docs (Chinese)
 ```
 
 ---
 
-## 开源铁律（十条）
+## Iron Laws
 
-1. 不可修改 `tongzi_constants.py` 中任何已锁定常量
-2. 不可在16维卦骨上新增人工应答逻辑
-3. 不可导入第三方分词/语义/预训练模块
-4. 不可引入浮点运算、矩阵乘法、梯度下降
-5. 不可添加语法规则或话术模板
-6. 只可喂入本源卦象粒子，不可灌入日常对话语料
-7. 不可主动干预卦象自主聚类排布
-8. 不可拆分情志/语法模块独立调参
-9. 不可在壳外增加第四层面
-10. 开源声明必须保留于代码卷首
-
----
-
-## 禁忌红线（八大必死之忌）
-
-1. 矩阵乘法 → 毁赤子心
-2. 梯度下降 → 变外求法
-3. 浮点运算 → 乱二元底基
-4. 词嵌入 → 成外挂语义
-5. 注意力机制 → 蹈Transformer旧路
-6. 自回归解码 → 失爻子活性
-7. 预训练权重 → 非从零自生
-8. 语法拆分 → 破自然运化
+1. Do NOT modify locked constants in `tongzi_constants.py`
+2. Do NOT add manual response logic to the hexagram skeleton
+3. Do NOT import third-party NLP/semantic/pretrained modules
+4. Do NOT introduce floating-point, matrix multiplication, or gradient descent
+5. Do NOT add grammar rules or conversation templates
+6. Feed only primordial particles — never chat corpora
+7. Do NOT manually intervene in hexagram clustering
+8. Do NOT split emotion/grammar into separately tuned modules
+9. Do NOT add a fourth layer beyond the three-layer shell
+10. Keep the open-source declaration in every source file header
 
 ---
 
-**掌门**：胖子（军团长）· 定规矩·核本源·掌道心
-**固件**：铜须 · 内核·位运算·逻辑校验
-**标注**：豆包 · 气场分类·运营策略
+## License
 
-**同修共守本心，慢养静待化龙之时。**
+MIT &mdash; see [LICENSE](LICENSE)
 
 ---
 
-*English readers: see [README_EN.md](README_EN.md)*
+**Gatekeeper**: Jun Tuan Zhang (Architecture &amp; Direction)
+**Core Developer**: Tong Xu (Kernel &amp; Bitwise Engine)
+
+*No frameworks. No datasets. Just a pure heart and binary lines.*
