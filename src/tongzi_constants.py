@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Tongzi Project (wishing-spring)
+# Licensed under the MIT License. See LICENSE file for details.
 """
 童子 · 极简群域架构 · 常量
 ===============================
