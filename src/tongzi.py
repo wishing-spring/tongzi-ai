@@ -32,7 +32,7 @@ def cmd_tick(space: Space, args: list) -> str:
     for _ in range(n):
         r = space.tick()
         msgs.append(f"  tick {space.tick_count}  "
-                    f"撞:{r['collisions']} 固:{r['solidified']} 并:{r['merged']}")
+                    f"撞:{r['collisions']} 固:{r['solidified']} 合:{r['merges']}")
     return '\n'.join(msgs)
 
 

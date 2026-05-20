@@ -159,6 +159,16 @@ class Gua:
         """内核段: 已锁死的根基位。"""
         return self.value & self.mask if self.is_solid else 0
 
+    # ---- 工厂 ----
+
+    @classmethod
+    def spawn(cls, value: int, pos: int, id_l: int) -> Gua:
+        """生成合体子卦。id_l 下沉但位宽保持 VEC_DIM。"""
+        g = cls(value & FULL_MASK, pos, VEC_DIM)
+        g.id_l = max(2, id_l)
+        g.mask = g._derive_mask()
+        return g
+
     # ---- 八条核心运算 ----
 
     def collide(self, other: Gua) -> Tuple[int, int]:
@@ -351,8 +361,12 @@ class Space:
         return self.F0 // (1 + gua.id_l)
 
     def _rate(self, gua: Gua) -> int:
-        """组合速率: min(f₁, f₂)。取两频控的较慢者。"""
-        return min(self.f1(gua), self.f2(gua))
+        """速率: f₂ = F0/(1+id_l)。层深控节律。
+
+        id_l 小 → 速率高 → 浅层卦频繁碰撞。
+        同层卦同速——不因出生顺序偏斜。
+        """
+        return self.f2(gua)
 
     def _accumulate_energy(self, gua: Gua) -> None:
         """每 tick 能量累积。仅非固化卦。"""
@@ -512,7 +526,7 @@ class Space:
           4. 固化判据
           5. 密度自清
 
-        返回: 本 tick 统计 {'collisions': N, 'solidified': M, 'merged': K}
+        返回: 本 tick 统计 {'collisions': N, 'solidified': M, 'merges': K}
         """
         self.tick_count += 1
 
@@ -530,17 +544,40 @@ class Space:
 
         active = [g for g in self.guas if self._try_discharge(g)]
         collision_count = 0
+        merge_count = 0
+
         for i in range(0, len(active) - 1, 2):
             a, b = active[i], active[i + 1]
+
+            # --- 原有碰撞 (A、B 原行为不变) ---
             diff, common = a.collide(b)
             a.hit_count += 1
             b.hit_count += 1
             collision_count += 1
-            # 碰撞产物写入非固化卦的游动段
             if not a.is_solid:
                 a.value = (a.value & a.mask) | (diff & ~a.mask)
             if not b.is_solid:
                 b.value = (b.value & b.mask) | (common & ~b.mask)
+
+            # --- 合体产子: 两条腿 ---
+            h = hamming(a.moving_bits, b.moving_bits)
+            if 4 < h < 12:
+
+                # XOR 合体: 差异关联链 (跳过零值)
+                xor_val = a.moving_bits ^ b.moving_bits
+                if xor_val:
+                    C_xor = Gua(xor_val, self.tick_count + self.size, VEC_DIM)
+                    C_xor.lambda_base = self._derive_lambda_base(C_xor.id_l)
+                    self.guas.append(C_xor)
+                    merge_count += 1
+
+                # AND 合体: 共识沉淀 (跳过零值)
+                and_val = a.moving_bits & b.moving_bits
+                if and_val:
+                    C_and = Gua(and_val, self.tick_count + self.size + 1, VEC_DIM)
+                    C_and.lambda_base = self._derive_lambda_base(C_and.id_l)
+                    self.guas.append(C_and)
+                    merge_count += 1
 
         # ---- 4. 固化判据 ----
         solid_count = 0
@@ -555,7 +592,8 @@ class Space:
         return {
             'collisions': collision_count,
             'solidified': solid_count,
-            'merged': 1 if merged else 0,
+            'merges':     merge_count,
+            'cleanups':   1 if merged else 0,
         }
 
     # ============================================================
