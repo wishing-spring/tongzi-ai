@@ -244,8 +244,10 @@ class ShiErMao:
         self.core.time_tick()
         self.调度一周()
         执行结果 = self.执行活跃锚()
-        self.core.clean_dormant()
-        # 定期归元
+        # 代谢自清：量超才清，不按时间暴力删除
+        if self.core.size > REST_TRIGGER:
+            self.core.clean_dormant()
+        # 定期归元（标记而非删除）
         if self.core.tick % RHYTHM_CYCLE == 0:
             self.core.return_to_source()
         # 淤积分流

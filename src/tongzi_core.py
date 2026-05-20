@@ -171,19 +171,23 @@ class TongziCore:
     # ========== 持久化 ==========
 
     def save_state(self, filepath: str) -> None:
-        """保存核心状态到JSON"""
+        """保存核心状态到JSON（含真实时间戳）"""
+        from datetime import datetime
         state = {
             'data': self.data,
             'active': self.active,
             'hits': self.hits,
             'potency': self.potency,
             'tick': self.tick,
+            'saved_at': datetime.now().isoformat(),
         }
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(state, f, ensure_ascii=False, indent=2)
 
     def load_state(self, filepath: str) -> bool:
-        """从JSON恢复核心状态。失败返回False，首次启动正常。"""
+        """从JSON恢复核心状态。加载时用真实时间推进tick，
+        让两次浇水之间的自然流逝被系统感知。"""
+        from datetime import datetime
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 state = json.load(f)
@@ -191,7 +195,24 @@ class TongziCore:
             self.active = {k: int(v) for k, v in state['active'].items()}
             self.hits = {k: int(v) for k, v in state['hits'].items()}
             self.potency = {k: int(v) for k, v in state['potency'].items()}
-            self.tick = int(state['tick'])
+            old_tick = int(state['tick'])
+
+            # 用真实时间推进tick（1小时≈1tick，补上离线流逝）
+            saved_at = state.get('saved_at', '')
+            if saved_at:
+                try:
+                    saved_dt = datetime.fromisoformat(saved_at)
+                    elapsed_hours = (datetime.now() - saved_dt).total_seconds() / 3600
+                    # 最少补1，最多补72（防异常）
+                    extra_ticks = max(1, int(elapsed_hours))
+                    extra_ticks = min(extra_ticks, 72)
+                    self.tick = old_tick + extra_ticks
+                except ValueError:
+                    self.tick = old_tick + 1
+            else:
+                self.tick = old_tick + 1
+
+            # 时间推进后，代谢由tick_cycle在后续应答中自然触发
             return True
         except (FileNotFoundError, KeyError, json.JSONDecodeError):
             return False
