@@ -1,46 +1,42 @@
-# Tongzi-Chizi · Native Evolution AI
+# Tongzi · Bit-Store Responder — A Thought Experiment
 
-**A 41KB dependency-free offline AI kernel. No training data. No Transformer. Pure endogenous evolution.**
-
----
-
-## &#9888;&#65039; Important
-
-> **This is NOT a consumer chatbot.**
-> No GUI. No optimized conversation logic.
->
-> Built for kernel researchers, like-minded builders, and lightweight architecture explorers.
-> If you want smooth daily chat or a friendly graphical interface, this is not for you.
+**41KB. Zero dependencies. No training. No Transformer. Not a product. A thought experiment in pure F₂ evolution.**
 
 ---
 
 ## What Is This?
 
-We abandoned the mainstream path: no training datasets, no Transformer, no gradient descent, no attention mechanisms.
+A thought experiment: what if we built a text response system without any neural components?
+
+No training data. No Transformer. No gradient descent. No attention. No word embeddings. No floating point.
 
 Instead:
-- **Chizi Heart**: Euler's identity (e^(i&pi;)+1=0) as the rhythm core
-- **Hexagram Skeleton**: 16-bit F&#8322; vector space (65,536 possible hexagrams)
-- **Inner Alchemy Hub**: Three-layer circulation — intake &rarr; aura assimilation &rarr; potential expression
+- **BitStore**: 16-bit F₂ vector space (65,536 possible states), Hamming-distance retrieval
+- **Balancer**: 12 polarity flags (6 yang + 6 yin), auto-correcting
+- **Responder**: Three-stage pipeline — ingest → cluster → respond
 
-The system grows through endogenous evolution: feed it primordial particles, let auras naturally cluster, responses emerge from within.
+All constants derived from Euler's identity and the golden ratio, locked. The system runs on pure bitwise operations.
 
 ---
 
 ## Architecture
 
-### Layer 1: Chizi Heart (Source Rhythm)
-- Euler-derived coefficients, permanently locked
-- `tongzi_constants.py` — immutable
+### Layer 1: BitStore
+- 16-bit integer vectors, stored in a dict
+- ord-sum encoding: `sum(ord(c)) & 0xFFFF`
+- Hamming distance for nearest-neighbor search
+- `tongzi_constants.py` + `tongzi_core.py`
 
-### Layer 2: Hexagram Skeleton
-- 16-dimensional binary vector space
-- 12 Yin-Yang anchors (6 positive + 6 negative) for scheduling
-- `tongzi_core.py` + `tongzi_mao.py`
+### Layer 2: Balancer
+- 12 polarity flags, 6 yang (gather/pair/flow/rise/generate/link) + 6 yin (scatter/break/reverse/descend/trace/cut)
+- Auto-balance when gap ≥ 3
+- Periodic marking of stale entries
+- `tongzi_mao.py`
 
-### Layer 3: Inner Alchemy Hub
-- Intake &rarr; Aura Assimilation &rarr; Potential Expression
-- Self-protection: Yin-Yang auto-balance, dormancy return, anomaly silence
+### Layer 3: Responder
+- Three-stage pipeline: ingest input → cluster similar vectors → select response
+- 9 hardcoded output strings, chosen by frequency tier + cluster presence + polarity gap
+- Anomaly detection: silently store inputs too far from all known vectors
 - `tongzi_data.py`
 
 ---
@@ -51,81 +47,65 @@ The system grows through endogenous evolution: feed it primordial particles, let
 python tongzi.py
 ```
 
-Requirements: Python 3.6+. Zero dependencies. Runs on any device without GPU.
+Requirements: Python 3.6+. Zero dependencies. Any device.
 
 | Command | Purpose |
 |:--|:--|
-| Type text | Feed primordial concepts, wait for response |
-| `/status` | View internal state (hexagram count, auras, Yin-Yang balance) |
+| Type text | Encode → ingest → respond |
+| `/status` | View entries, active count, clusters, polarity gap |
 | `/exit` | Quit |
 
 ---
 
 ## Current Baseline
 
-| Input Type | Response | Notes |
-|:--|:--|:--|
-| Neutral (hello, happy, upset) | &ldquo;Okay.&rdquo; | Aura not yet differentiated |
-| Yang-field (sun, moon) | &ldquo;Peace.&rdquo; | Yang aura recognition active |
-| Unknown/anomalous | &ldquo;&hellip;&rdquo; | Silently stored, no crash |
+9 possible responses, chosen by an if-else tree.
 
-76 hexagrams &middot; 61 active &middot; 13 independent auras &middot; Yin-Yang self-balancing
+60 seed vectors, 12 polarity categories, 15 cluster labels.
 
----
-
-## How to Grow It
-
-See the cultivation manual (Chinese: &#20859;&#20025;&#20462;&#28860;&#27969;&#31243;&#25163;&#20876;.md).
-
-Three stages:
-1. **Foundation** — Feed 10&ndash;30 primordial concepts daily (heaven/earth, movement/stillness, warm/cold...)
-2. **Assimilation** — Auto-triggered: auras cluster, responses diversify
-3. **Expression** — Continuous context, emotional bias, stable voice emerge naturally
-
-**Never feed**: chat logs, internet slang, Q&A pairs, grammar rules.
+Test script: `python src/boundary_test.py`
 
 ---
 
 ## File Structure
 
 ```
-&#9500;&#9472; src/
-&#9502;  &#9500;&#9472; tongzi_constants.py   # Locked Euler constants
-&#9502;  &#9500;&#9472; tongzi_core.py        # Bitwise ops + self-protection
-&#9502;  &#9500;&#9472; tongzi_mao.py         # 12-anchor scheduler
-&#9502;  &#9500;&#9472; tongzi_data.py        # Inner alchemy hub
-&#9502;  &#9500;&#9472; tongzi_seeds.py       # 60 primordial seed hexagrams
-&#9502;  &#9492;&#9472; tongzi.py             # Single entry point
-&#9500;&#9472; README.md
-&#9500;&#9472; README_EN.md              # This file
-&#9500;&#9472; LICENSE                    # MIT
-&#9492;&#9472; docs/                     # Theory & design docs (Chinese)
+├── src/
+│   ├── tongzi_constants.py   # Locked constants
+│   ├── tongzi_core.py        # BitStore: F₂ vector store
+│   ├── tongzi_mao.py         # Balancer: polarity scheduling
+│   ├── tongzi_data.py        # Responder: ingest→cluster→respond
+│   ├── tongzi_seeds.py       # 60 seed vectors
+│   ├── tongzi.py             # Interactive entry point
+│   ├── water.py              # Cron watering script
+│   └── boundary_test.py      # Read-only boundary observer
+├── README.md
+├── FAILURE_BOUNDARIES.md     # Honest assessment of limitations
+├── LICENSE                   # MIT
+└── docs/                     # Theory notes (Chinese)
 ```
 
 ---
 
 ## Iron Laws
 
-1. Do NOT modify locked constants in `tongzi_constants.py`
-2. Do NOT add manual response logic to the hexagram skeleton
-3. Do NOT import third-party NLP/semantic/pretrained modules
-4. Do NOT introduce floating-point, matrix multiplication, or gradient descent
-5. Do NOT add grammar rules or conversation templates
-6. Feed only primordial particles — never chat corpora
-7. Do NOT manually intervene in hexagram clustering
-8. Do NOT split emotion/grammar into separately tuned modules
-9. Do NOT add a fourth layer beyond the three-layer shell
+1. No modification of locked constants
+2. No manual response logic injected into the store
+3. No third-party NLP/semantic/pretrained modules
+4. No floating-point, matrix multiplication, or gradient descent
+5. No grammar rules or conversation templates
+6. Feed only seed concepts — never chat corpora
+7. No manual cluster manipulation
+8. No fourth layer beyond the three-layer architecture
+9. No splitting emotion/grammar into separately tuned modules
 10. Keep the open-source declaration in every source file header
 
 ---
 
 ## License
 
-MIT &mdash; see [LICENSE](LICENSE)
+MIT
 
 ---
 
-**Gatekeeper**: Jun Tuan Zhang (Architecture &amp; Direction)
-**Core Developer**: Tong Xu (Kernel &amp; Bitwise Engine)
-
-*No frameworks. No datasets. Just a pure heart and binary lines.*
+*A thought experiment. Not a chatbot. Not an attempt to beat benchmarks. Just F₂ bits and a question.*

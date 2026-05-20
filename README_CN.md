@@ -1,7 +1,7 @@
-# 赤子童子 · 筑基原生演化AI
+# 童子 · 位运算应答实验 — 一个思想实验
 
-**Tongzi-Chizi Native Evolution AI**
-**版本**: v5.0 筑基出厂稳定版 | **体量**: 40.9KB | **依赖**: 零
+**Tongzi · Bit-Store Responder — A Thought Experiment**
+**版本**: v0.5 | **体量**: 45KB | **依赖**: 零
 
 ---
 
