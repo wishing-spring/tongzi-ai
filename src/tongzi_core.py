@@ -40,11 +40,40 @@ class BitStore:
     def rotate_right(v: int, step: int = 1) -> int:
         return ((v >> step) | (v << (VEC_DIM - step))) & FULL_MASK
 
-    # ========== Text encoding ==========
+    # ========== φ-卦 encoding ==========
+
+    # φ的二进制小数展开（256位，Decimal精度）
+    PHI_BITS = (
+        "10011110001101110111100110111001"
+        "01111111010010100111110000010101"
+        "00011011001000100110111101111101"
+        "00111001010111101110011001011010"
+        "01111010011011110011110001010111"
+        "00100001011001000011011111011111"
+        "01110010000111011111101101001011"
+        "01001110101111110011100101111011"
+    )
+
+    @classmethod
+    def _phi_fraction_bits(cls, start: int, n: int) -> str:
+        """φ fraction bits, cyclically. Infinite, non-repeating."""
+        bits = cls.PHI_BITS
+        result = []
+        for i in range(n):
+            result.append(bits[(start + i) % len(bits)])
+        return ''.join(result)
 
     def encode(self, text: str) -> int:
-        """ord-sum → 16-bit. Collision-prone but zero-dependency."""
-        return sum(ord(c) for c in text) & FULL_MASK
+        """
+        φ-卦编码。
+        文字→哈希到φ二进制流中的位置→取VEC_DIM位。
+        每多取一位=多一爻=向上层卦分叉。
+        底2爻→3爻→4爻→…→16爻，逐层包含。
+        """
+        seed = sum(ord(c) << (i * 7 % 12) for i, c in enumerate(text))
+        pos = seed % len(self.PHI_BITS)
+        bits = self._phi_fraction_bits(pos, VEC_DIM)
+        return int(bits, 2)
 
     # ========== Vector storage ==========
 
