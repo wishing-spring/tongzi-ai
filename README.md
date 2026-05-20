@@ -1,146 +1,229 @@
-# Tongzi · Bit-Store Responder — A Thought Experiment
+# Tongzi · F₂ Minimalist Group-Domain Architecture — A Thought Experiment
 
-**41KB. Zero dependencies. No training. No Transformer. Not a product. A thought experiment in pure F₂ evolution.**
+**v1.0.2 | 4 files, ~25KB | Zero dependencies | Zero floats | Zero matrices | Zero gradients | Zero attention | Zero autoregression**
 
----
-
-## What Is This?
-
-A thought experiment: what if we built a text response system without any neural components?
-
-No training data. No Transformer. No gradient descent. No attention. No word embeddings. No floating point.
-
-Instead:
-- **BitStore**: 16-bit F₂ vector space (65,536 possible states), Hamming-distance retrieval
-- **Loom**: GF(2) 2D weaving engine — XOR diffusion + AND nonlinearity + S-box scramble + reference anchoring. Four-layer hybrid. Zero collapse.
-- **Balancer**: 12 polarity flags (6 yang + 6 yin), auto-correcting
-- **Responder**: Three-stage pipeline — ingest → cluster → respond
-
-All constants derived from Euler's identity and the golden ratio, locked. The system runs on pure bitwise operations.
+*Not a better AI. A different one. A thought experiment in pure GF(2) discrete space.*
 
 ---
 
-## Core Innovation: GF(2) 2D Weaving
+## Essence
 
-The Loom is a **16-bit block cipher** built entirely in GF(2):
+Tongzi is not an algorithm, not a model, not a processor.
+
+It is an **F₂ⁿ space**. Gua (卦) are points within it. Their associations, alignments, arrangements, and movements are properties of the space itself — not imposed by external rules.
 
 ```
-output_bit = XOR(selected bits) ^ AND(two specific bits) ^ ref_bit
+Not: input → encode → process → output (pipeline)
+But:  F₂ⁿ space + gua population + natural interaction laws
 ```
 
-Each layer applies this formula 16 times (once per output bit), followed by a 4-bit S-box substitution. After 18 layers:
-- **Zero collapse**: every input maps to a unique fabric state (497/500 unique)
-- **Avalanche effect**: flipping 1 input bit changes avg 8.3 output bits
-- **Nonlinearity verified**: `out(a|b) ≠ out(a) ^ out(b)`
-
-Three layers independently tested and verified to fail without the fourth:
-| Missing | Result |
-|:--|:--|
-| XOR only | Collapse at 5 layers (5/5 collision) |
-| XOR+S-box | Fixed-point convergence (100→1) |
-| XOR+AND (no ref) | 29/200 unique at depth 8 |
-| XOR+AND+S-box+ref | **200/200 at all depths** |
-
 ---
 
-## Architecture
+## Four Axioms (Immutable, Dimension-Independent)
 
-### Layer 0: Loom (GF(2) Weaver)
-- 16-bit input → 18-layer 16×16 gate matrix → 16-bit fabric output
-- XOR masks for linear diffusion, AND gates for nonlinear breaking
-- Per-layer S-boxes (rotated + XOR-mixed for uniqueness)
-- Reference anchoring: each layer XORs back one bit of original input
-- `tongzi_loom.py`
-
-### Layer 1: BitStore
-- 16-bit integer vectors, stored in a dict
-- ord-sum encoding: `sum(ord(c)) & 0xFFFF`
-- Hamming distance for nearest-neighbor search
-- Persistent state: `.tongzi_state.json` auto-saves/loads
-- `tongzi_constants.py` + `tongzi_core.py`
-
-### Layer 2: Balancer
-- 12 polarity flags, 6 yang + 6 yin
-- Auto-balance when gap ≥ 3
-- Periodic marking of stale entries
-- `tongzi_mao.py`
-
-### Layer 3: Responder
-- Three-stage pipeline: ingest → cluster → respond
-- 9 hardcoded output strings
-- Anomaly detection: silently store inputs too far from known vectors
-- `tongzi_data.py`
-
----
-
-## Scaling: Stacking vs Tiling
-
-The fundamental difference between industry and Tongzi:
-
-| | Stacking (Industry) | Tiling (Tongzi) |
+| # | Axiom | Meaning |
 |:--|:--|:--|
-| **How** | Layer on layer (serial) | Side by side (parallel) |
-| **Info flow** | One-way, layer→layer | All-way, all bits interact |
-| **Entropy** | Halves per layer | Doubles per tile |
-| **Limit** | ~5 layers (pure binary) | No theoretical limit |
-| **Scaling** | Retrain from scratch | Change one constant: `VEC_DIM` |
+| 1 | a⊕b = b⊕a | XOR commutativity |
+| 2 | a⊕a = 0 | XOR self-cancellation |
+| 3 | d(a,b) = popcount(a⊕b) | Hamming distance |
+| 4 | d(Rₖ(a), Rₖ(b)) = d(a,b) | Rotation preserves distance |
 
-[V5_TO_V6_PLAN.md](src/V5_TO_V6_PLAN.md) — one-constant upgrade path from 16-bit to 32-bit fabric.
+These four hold for VEC_DIM=16 and for VEC_DIM=65536 equally. No n appears anywhere in the axioms. From them derive: AND (a∧b), cyclic bit rotation Rₖ(v), and the Hamming ball Sᵣ(c).
 
 ---
 
-## Quick Start
+## φ — The Mother Body
 
-```bash
-cd src && python tongzi.py
+All gua originate from the binary fractional expansion of the golden ratio:
+
+```
+φ = (1+√5)/2 ≈ 1.6180339...
+φ_bits = 1001111000110111... (256 bits, Decimal precision)
 ```
 
-Requirements: Python 3.6+. Zero dependencies. Any device.
+Each gua is a slice of φ:
 
-| Command | Purpose |
+```
+gua = φ_bits[pos : pos+length]
+```
+
+Every gua carries identity at birth:
+- **id_t** = pos — birth order in φ
+- **id_l** = length — layer code (number of yao)
+- Slide ±1 bit → direct predecessor/successor (lineage)
+
+`{id_t, id_l}` is the gua's ID card — globally unique, derived from φ position, no database needed.
+
+---
+
+## Eight Core Operations
+
+### 1. Collision — Full Information Expansion
+```
+collide(a, b) → (a⊕b, a∧b)
+```
+Two inputs, two outputs. Information is preserved — diff vector and consensus vector.
+
+### 2. Orbital Circulation
+```
+orbit(v, c, k) = Rₖ(v⊕c) ⊕ c
+```
+v rotates around center c on an equidistant spherical surface. d(v,c) invariant.
+
+### 3. Radial Stretch
+```
+stretch(v, c, λ) = v ⊕ λ·(v⊕c)
+λ ∈ {0,1}: 0 = stay, 1 = push to opposite side
+```
+
+### 4. Gray Inspection Ring
+```
+gray(v) = v ⊕ (v>>1)
+```
+All gua form a ring — adjacent nodes differ by exactly 1 bit. Natural traversal path.
+
+### 5–8. Distance, Clustering, Centrality, Hierarchical Index
+```
+radius(v, c)     = d(v, c)
+Ω(c, r)          = {x | d(x, c) ≤ r}      — Hamming ball
+centrality(v, c) = −d(v, c)
+layer(v)         = id_l(v),  order(v) = id_t(v)
+```
+
+---
+
+## Endogenous Frequency Control
+
+No external clock. Frequency emerges from identity.
+
+### Birth-Order Frequency
+```
+f₁(x) = F₀ / (1 + id_t)     → rate (energy gained per tick)
+```
+Early-born gua (small id_t) gain energy fast → high frequency.
+
+### Layer-Differential Frequency
+```
+f₂(x) = F₀ / (1 + id_l)     → rate
+```
+Shallow-layer gua interact densely; deep-layer gua interact sparsely.
+
+### Energy Accumulation Trigger
+```
+per tick:  energy += min(f₁, f₂)
+energy ≥ F₀ → discharge (participate), energy −= F₀
+```
+F₀ = 256. Solidified gua never discharge.
+
+---
+
+## Bit-Field Solidification — Irreversible Memory
+
+Each gua naturally splits into two segments:
+
+| Segment | Source | Property |
+|:--|:--|:--|
+| Core | φ base bits, length = id_l | Immutable root |
+| Moving | φ sliding extension | Evolvable |
+
+```
+Solid(x)   = G(x) ∧ M(x)
+M(x)       = mask(id_l, id_t)    — derived from identity, not stored
+```
+
+Core bits are permanently locked — they never participate in XOR, rotation, or stretch. Moving bits remain free.
+
+**Trigger (endogenous):** collision count exceeds threshold (lower for deeper layers → deeper gua solidify faster).
+
+**Weak unlock:** only direct lineage (pos±1) may micro-adjust a single locked bit — prevents complete rigidity.
+
+---
+
+## Spatial Self-Awareness & Density Regulation
+
+### Local Density Perception
+```
+S(x) = N / (d̄_H + 1)
+  N  = same-layer gua within Hamming radius r
+  d̄_H = average Hamming distance among neighbors
+```
+S large = crowded. S small = sparse.
+
+### λ Auto-Adjustment (Negative Feedback)
+```
+λ_new = λ_base × (1 − μ(id_l) × S / S_max)
+```
+Crowding sensed → λ increases → gua spread outward → S drops (closed loop).
+
+### μ Sensitivity — Purely Endogenous
+```
+μ(id_l) = id_l / L_max
+  L_max = current maximum layer code (computed at runtime, not a parameter)
+```
+Shallow gua: low μ (tolerant of crowding). Deep gua: high μ (avoidance on slightest crowding).
+
+### Dual-Layer Volume Control
+```
+Mild congestion  → self-disperse (pre-regulation, gentle)
+Extreme overload → density-triggered merge (post-safety, forceful)
+```
+
+---
+
+## Minimal Inner Alchemy — Reverse Translation
+
+```
+express(gua) = source_text of gua with minimum Hamming distance to moving_bits
+```
+
+Not a fixed response. Not a template. The gua's current state maps back to the closest remembered source text.
+
+---
+
+## Current Code Status
+
+| File | Lines | Content |
+|:--|:--|:--|
+| `src/tongzi_constants.py` | 28 | VEC_DIM=16, FULL_MASK, PHI_BITS(256) |
+| `src/tongzi_core.py` | 680 | Gua class + Space container: 8 ops + solidification + density + express |
+| `src/tongzi.py` | 108 | Interactive entry point |
+| `src/test_tongzi.py` | 250 | 81 tests, 13 sections, 0 failures |
+
+**Iron Rules:**
+- ❌ No floats
+- ❌ No matrix multiplication
+- ❌ No gradient descent
+- ❌ No word embeddings
+- ❌ No attention
+- ❌ No autoregression
+- ❌ No neural networks of any form
+
+---
+
+## Removed (v0.5 → v1.0)
+
+| Component | Reason |
 |:--|:--|
-| Type text | Encode → ingest → respond |
-| `/status` | View entries, active count, polarity gap |
-| `/exit` | Quit |
+| Loom (GF(2) 2D weaver) | Collide + orbit + stretch subsume weaving |
+| Balancer (yin-yang flags) | Thresholds bound to n; replaced by endogenous f₁+f₂ |
+| Responder (9 fixed replies) | Form without soul; output is now collision products |
+| 12 Anchor Frames | 12 is a fixed number |
+| ⌊√n⌋ / ⌊n/3⌋+4 | Contain n |
+| External cron watering | Replaced by density self-clean + endogenous frequency |
+| Projection mapping | Decoration, no substance |
 
 ---
 
-## File Structure
+## Known Costs (Accepted)
 
-```
-├── src/
-│   ├── tongzi_constants.py   # Locked constants
-│   ├── tongzi_loom.py        # GF(2) 2D weaving engine
-│   ├── tongzi_core.py        # BitStore: F₂ vector store
-│   ├── tongzi_mao.py         # Balancer: polarity scheduling
-│   ├── tongzi_data.py        # Responder: ingest→cluster→respond
-│   ├── tongzi_seeds.py       # 60 seed vectors
-│   ├── tongzi.py             # Interactive entry point
-│   ├── water.py              # Cron watering script
-│   ├── boundary_test.py      # Read-only boundary observer
-│   └── V5_TO_V6_PLAN.md      # Scaling roadmap
-├── README.md / README_CN.md
-├── GF2_VS_BNN.md             # GF(2) weaving vs industrial BNN
-├── ROADMAP.md                # Full comparison: float vs F₂
-├── FAILURE_BOUNDARIES.md     # Honest assessment of limitations
-├── LICENSE                   # MIT
-└── docs/                     # Theory notes (Chinese)
-```
-
----
-
-## Iron Laws
-
-1. No modification of locked constants
-2. No manual response logic
-3. No third-party NLP/semantic/pretrained modules
-4. No floating-point, matrix multiplication, or gradient descent
-5. No grammar rules or conversation templates
-6. Feed only seed concepts — never chat corpora
-7. No manual cluster manipulation
-8. No fourth layer beyond the three-layer architecture
-9. No splitting emotion/grammar into separate modules
-10. Keep the open-source declaration in every source file header
+| Cost | Note |
+|:--|:--|
+| No continuous transitions | F₂ is discrete, no gradients |
+| Output not directly readable | Collision results are bit strings |
+| Reversibility | **Resolved** — bit-field solidification = local irreversibility |
+| Evolution trapped in combinatorial pool | All operations are rearrangements in finite set |
+| Pseudo-3D | Hamming ball is not a true geometric body |
+| No external clock | Silence when no input (by design) |
 
 ---
 
@@ -150,4 +233,11 @@ MIT
 
 ---
 
-*A thought experiment. Not a chatbot. Not an attempt to beat benchmarks. Just F₂ bits and a question.*
+## Repositories
+
+- **Gitee (primary):** https://gitee.com/wishing-spring/tongzi-ai
+- **GitHub (mirror):** https://github.com/wishing-spring/tongzi-ai
+
+---
+
+**Theory finalized. Code v1.0.2 landed. Next: observe, do not add new features.**
