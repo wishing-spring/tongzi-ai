@@ -8,6 +8,10 @@ from tongzi_core import TongziCore
 from tongzi_mao import ShiErMao
 from tongzi_constants import *
 from typing import Optional
+import os
+
+# 持久化文件路径
+STATE_FILE = os.path.join(os.path.dirname(__file__), '.tongzi_state.json')
 
 # ============================================================
 # 内丹主类
@@ -183,6 +187,29 @@ class NeiDan:
 
         output = self.势能外放(similar)
         return output
+
+    # ========== 持久化 ==========
+
+    def save_state(self) -> None:
+        """保存内丹状态（核心+气场记录）"""
+        import json
+        self.core.save_state(STATE_FILE)
+        with open(STATE_FILE, 'r', encoding='utf-8') as f:
+            state = json.load(f)
+        state['aura'] = self.气场记录
+        with open(STATE_FILE, 'w', encoding='utf-8') as f:
+            json.dump(state, f, ensure_ascii=False, indent=2)
+
+    def load_state(self) -> bool:
+        """加载内丹状态。首次启动返回False（正常，需注入种子）。"""
+        import json
+        if not self.core.load_state(STATE_FILE):
+            return False
+        # 加载气场记录
+        with open(STATE_FILE, 'r', encoding='utf-8') as f:
+            state = json.load(f)
+        self.气场记录 = state.get('aura', {})
+        return True
 
 # ============================================================
 # 自检

@@ -6,6 +6,7 @@
 """
 from tongzi_constants import *
 from typing import Optional
+import json, os
 
 class TongziCore:
     """童子原生AI 核心底层工具层"""
@@ -166,3 +167,31 @@ class TongziCore:
             'returned': sum(1 for p in self.potency.values() if p == -1),
             'deep': sum(1 for p in self.potency.values() if p >= 2),
         }
+
+    # ========== 持久化 ==========
+
+    def save_state(self, filepath: str) -> None:
+        """保存核心状态到JSON"""
+        state = {
+            'data': self.data,
+            'active': self.active,
+            'hits': self.hits,
+            'potency': self.potency,
+            'tick': self.tick,
+        }
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(state, f, ensure_ascii=False, indent=2)
+
+    def load_state(self, filepath: str) -> bool:
+        """从JSON恢复核心状态。失败返回False，首次启动正常。"""
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                state = json.load(f)
+            self.data = {k: int(v) for k, v in state['data'].items()}
+            self.active = {k: int(v) for k, v in state['active'].items()}
+            self.hits = {k: int(v) for k, v in state['hits'].items()}
+            self.potency = {k: int(v) for k, v in state['potency'].items()}
+            self.tick = int(state['tick'])
+            return True
+        except (FileNotFoundError, KeyError, json.JSONDecodeError):
+            return False
