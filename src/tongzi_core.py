@@ -159,16 +159,6 @@ class Gua:
         """内核段: 已锁死的根基位。"""
         return self.value & self.mask if self.is_solid else 0
 
-    # ---- 工厂 ----
-
-    @classmethod
-    def spawn(cls, value: int, pos: int, id_l: int) -> Gua:
-        """生成合体子卦。id_l 下沉但位宽保持 VEC_DIM。"""
-        g = cls(value & FULL_MASK, pos, VEC_DIM)
-        g.id_l = max(2, id_l)
-        g.mask = g._derive_mask()
-        return g
-
     # ---- 八条核心运算 ----
 
     def collide(self, other: Gua) -> Tuple[int, int]:
@@ -346,27 +336,13 @@ class Space:
     # 内生频控: 能量累积制
     # ============================================================
 
-    def f1(self, gua: Gua) -> int:
-        """顺位频控: f₁ = F0/(1+id_t)。早生高频率。
-
-        id_t 小 → 每 tick 累积能量多 → 更快触发放电。
-        """
-        return self.F0 // (1 + gua.id_t)
-
-    def f2(self, gua: Gua) -> int:
-        """层差频控: f₂ = F0/(1+id_l)。低层密交互。
-
-        id_l 小 → 累积快 → 浅层卦频繁碰撞。
-        """
-        return self.F0 // (1 + gua.id_l)
-
     def _rate(self, gua: Gua) -> int:
         """速率: f₂ = F0/(1+id_l)。层深控节律。
 
         id_l 小 → 速率高 → 浅层卦频繁碰撞。
         同层卦同速——不因出生顺序偏斜。
         """
-        return self.f2(gua)
+        return self.F0 // (1 + gua.id_l)
 
     def _accumulate_energy(self, gua: Gua) -> None:
         """每 tick 能量累积。仅非固化卦。"""
@@ -549,6 +525,13 @@ class Space:
         for i in range(0, len(active) - 1, 2):
             a, b = active[i], active[i + 1]
 
+            # --- 合体判据 (碰撞前取值，避免污染) ---
+            h = hamming(a.moving_bits, b.moving_bits)
+            should_merge = (4 < h < 12)
+            if should_merge:
+                xor_val = a.moving_bits ^ b.moving_bits
+                and_val = a.moving_bits & b.moving_bits
+
             # --- 原有碰撞 (A、B 原行为不变) ---
             diff, common = a.collide(b)
             a.hit_count += 1
@@ -560,21 +543,19 @@ class Space:
                 b.value = (b.value & b.mask) | (common & ~b.mask)
 
             # --- 合体产子: 两条腿 ---
-            h = hamming(a.moving_bits, b.moving_bits)
-            if 4 < h < 12:
+            if should_merge:
+                next_pos = self.tick_count + self.size
 
                 # XOR 合体: 差异关联链 (跳过零值)
-                xor_val = a.moving_bits ^ b.moving_bits
                 if xor_val:
-                    C_xor = Gua(xor_val, self.tick_count + self.size, VEC_DIM)
+                    C_xor = Gua(xor_val, next_pos, VEC_DIM)
                     C_xor.lambda_base = self._derive_lambda_base(C_xor.id_l)
                     self.guas.append(C_xor)
                     merge_count += 1
 
                 # AND 合体: 共识沉淀 (跳过零值)
-                and_val = a.moving_bits & b.moving_bits
                 if and_val:
-                    C_and = Gua(and_val, self.tick_count + self.size + 1, VEC_DIM)
+                    C_and = Gua(and_val, next_pos + merge_count, VEC_DIM)
                     C_and.lambda_base = self._derive_lambda_base(C_and.id_l)
                     self.guas.append(C_and)
                     merge_count += 1

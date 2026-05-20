@@ -181,13 +181,9 @@ for g_orig, g_loaded in zip(space.guas, space2.guas):
 section("8. 频控")
 # ================================================================
 
-g_early = Gua(0, 5, 16)     # id_t=5 (早生)
-g_late  = Gua(0, 200, 16)   # id_t=200 (晚生)
-check(space.f1(g_early) > space.f1(g_late), "早生卦 f1 更大")
-
 g_low  = Gua(0, 0, 4)       # id_l=4 (浅层)
 g_high = Gua(0, 0, 14)      # id_l=14 (深层)
-check(space.f2(g_low) > space.f2(g_high), "浅层卦 f2 更大")
+check(space._rate(g_low) > space._rate(g_high), "浅层卦速率 > 深层卦速率")
 
 # 能量累积
 g_test = Gua(0, 10, 8)
