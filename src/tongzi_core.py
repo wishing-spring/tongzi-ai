@@ -99,6 +99,7 @@ class Gua:
         'hit_count',  # int : 累计碰撞次数
         'energy',     # int : 能量累积值 (频控用)
         'lambda_base',# int : 伸缩基数 (λ)
+        'source',     # str : 创建时的原始文本 (内丹反向译出用)
     )
 
     def __init__(self, value: int, pos: int, length: int):
@@ -125,6 +126,7 @@ class Gua:
         self.hit_count   = 0
         self.energy      = 0
         self.lambda_base = 0
+        self.source      = ""     # 创建时的原始文本
 
     # ---- 内部 ----
 
@@ -306,6 +308,7 @@ class Space:
         """
         value, pos = self.encode(text)
         g = Gua(value, pos, VEC_DIM)
+        g.source = text
 
         self._update_layer_max(g.id_l)
         g.lambda_base = self._derive_lambda_base(g.id_l)
@@ -554,6 +557,29 @@ class Space:
         }
 
     # ============================================================
+    # 反向译出 — 极简内丹
+    # ============================================================
+
+    def express(self, gua: Gua) -> str:
+        """反向译出: 用最近卦的源文本近似表达当前卦态。
+
+        遍历空间内所有卦，找与给定卦游动段汉明距离最近者，
+        返回其创建时的原始文本。无匹配时返回空串。
+        """
+        best = ""
+        best_dist = VEC_DIM + 1
+        for other in self.guas:
+            if other is gua:
+                continue
+            if not other.source:
+                continue
+            d = hamming(gua.moving_bits, other.value)
+            if d < best_dist:
+                best_dist = d
+                best = other.source
+        return best
+
+    # ============================================================
     # 持久化
     # ============================================================
 
@@ -571,6 +597,7 @@ class Space:
                     'h': g.hit_count,
                     'e': g.energy,
                     'lb': g.lambda_base,
+                    'src': g.source,
                 }
                 for g in self.guas
             ]
@@ -596,6 +623,7 @@ class Space:
             g.hit_count   = gd.get('h', 0)
             g.energy      = gd.get('e', 0)
             g.lambda_base = gd.get('lb', 0)
+            g.source      = gd.get('src', '')
             self.guas.append(g)
 
         # 重建运行时推导量

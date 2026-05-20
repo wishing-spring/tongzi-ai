@@ -281,6 +281,30 @@ except ValueError:
     check(True, "length>VEC_DIM 抛异常")
 
 # ================================================================
+section("13. 极简内丹 — 反向译出")
+# ================================================================
+
+space6 = Space()
+g_h = space6.ingest("hello")
+g_w = space6.ingest("world")
+g_hi = space6.ingest("hi")
+
+# express: 找到与 g_h 最近的源文本
+e_h = space6.express(g_h)
+check(e_h == "world" or e_h == "hi" or e_h == "", f"express(g_h) 返回最近文本: '{e_h}'")
+
+e_w = space6.express(g_w)
+check(isinstance(e_w, str), f"express 返回字符串: '{e_w}'")
+
+# source 持久化
+space6.save()
+space7 = Space()
+space7.load()
+check(space7.size == 3, "load 后 size 一致")
+for g in space7.guas:
+    check(g.source != "", f"source 已恢复: '{g.source}'")
+
+# ================================================================
 print(f"\n{'='*50}")
 print(f"总计: {PASS} 通过, {FAIL} 失败")
 print(f"{'='*50}")
