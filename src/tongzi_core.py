@@ -1,24 +1,24 @@
 """
-童子核心 v0.5 · 出厂版：位运算底层工具层
-========================================
-铁律对齐：壳不过三·永不矩阵·爻必活·纯二元本位
-常量对齐：tongzi_constants.py（已锁定）
+童子 v0.5 · F₂^16 vector store
+===============================
+Pure bitwise operations. No floats. No matrices.
 """
 from tongzi_constants import *
 from typing import Optional
 import json, os
 
-class TongziCore:
-    """童子原生AI 核心底层工具层"""
+class BitStore:
+    """16-bit F₂ vector store with Hamming-distance retrieval."""
 
     def __init__(self):
-        self.data = {}        # tag -> vec_val
-        self.active = {}      # tag -> last_used_tick
-        self.tick = 0
-        self.hits = {}        # tag -> 累计命中次数
-        self.potency = {}     # tag -> 势能层级(0浅蓄/1中凝/2沉敛)
+        self.data: dict[str, int] = {}        # tag → 16-bit vector
+        self.active: dict[str, int] = {}      # tag → last_used_tick
+        self.tick: int = 0
+        self.hits: dict[str, int] = {}        # tag → cumulative hits
+        self.potency: dict[str, int] = {}     # tag → frequency tier (0/1/2/-1)
+                                              # -1 = stale (marked for later purge)
 
-    # ========== 静态纯位运算 ==========
+    # ========== Static bitwise ops ==========
 
     @staticmethod
     def xor(a: int, b: int) -> int:
@@ -30,45 +30,44 @@ class TongziCore:
 
     @staticmethod
     def hamming(a: int, b: int) -> int:
-        return TongziCore.popcount(a ^ b)
+        return BitStore.popcount(a ^ b)
 
     @staticmethod
-    def shift_left(v: int, step: int = 1) -> int:
+    def rotate_left(v: int, step: int = 1) -> int:
         return ((v << step) | (v >> (VEC_DIM - step))) & FULL_MASK
 
     @staticmethod
-    def shift_right(v: int, step: int = 1) -> int:
+    def rotate_right(v: int, step: int = 1) -> int:
         return ((v >> step) | (v << (VEC_DIM - step))) & FULL_MASK
 
-    # ========== 文本编码 ==========
+    # ========== Text encoding ==========
 
-    def encode_text(self, text: str) -> int:
-        seed = sum(ord(c) for c in text)
-        return seed & FULL_MASK
+    def encode(self, text: str) -> int:
+        """ord-sum → 16-bit. Collision-prone but zero-dependency."""
+        return sum(ord(c) for c in text) & FULL_MASK
 
-    # ========== 向量仓储 ==========
+    # ========== Vector storage ==========
 
-    def add(self, tag: str, text: str):
-        """存入向量"""
-        if len(self.data) >= MAX_POOL:
-            self.clean_dormant()
-        vec = self.encode_text(text)
+    def put(self, tag: str, text: str):
+        """Store a vector. Triggers purge at capacity."""
+        if len(self.data) >= MAX_ENTRIES:
+            self.purge_stale()
+        vec = self.encode(text)
         self.data[tag] = vec
         self.active[tag] = self.tick
         self.hits[tag] = 0
         self.potency[tag] = 0
 
     def get(self, tag: str) -> Optional[int]:
-        """读取向量，刷新活跃度并更新势能"""
+        """Retrieve vector. Refreshes active timestamp, bumps freq tier."""
         if tag in self.data:
             self.active[tag] = self.tick
             self.hits[tag] = self.hits.get(tag, 0) + 1
-            # 势能升级
             h = self.hits[tag]
             p = self.potency.get(tag, 0)
-            if p < 1 and h >= POTENCY_SHALLOW:
+            if p < 1 and h >= FREQ_TIER1:
                 self.potency[tag] = 1
-            elif p < 2 and h >= POTENCY_MEDIUM:
+            elif p < 2 and h >= FREQ_TIER2:
                 self.potency[tag] = 2
             return self.data[tag]
         return None
@@ -79,84 +78,78 @@ class TongziCore:
 
     @property
     def active_count(self) -> int:
-        return sum(1 for t in self.active if self.tick - self.active[t] <= DORMANT_TICK)
+        return sum(1 for t in self.active
+                   if self.tick - self.active[t] <= STALE_AFTER)
 
-    def find_similar(self, target_vec: int, threshold: int = HAMMING_NEAR) -> list[str]:
-        """按汉明距离查找相似向量"""
+    def find_nearest(self, target_vec: int,
+                     threshold: int = SIMILARITY_NEAR) -> list[str]:
+        """Find vectors within Hamming distance ≤ threshold."""
         res = []
         for t, v in self.data.items():
+            if self.potency.get(t, 0) == -1:  # skip stale
+                continue
             if self.hamming(target_vec, v) <= threshold:
                 self.active[t] = self.tick
                 self.hits[t] = self.hits.get(t, 0) + 1
                 res.append(t)
         return res
 
-    def find_aura(self, target_vec: int) -> list[str]:
-        """找同气场向量（dH≤AURA_HOMOGENIZE_DIST）"""
-        return self.find_similar(target_vec, threshold=AURA_HOMOGENIZE_DIST)
+    def find_cluster(self, target_vec: int) -> list[str]:
+        """Find same-cluster vectors (dH ≤ CLUSTER_DISTANCE)."""
+        return self.find_nearest(target_vec, threshold=CLUSTER_DISTANCE)
 
-    def find_foreign(self, target_vec: int, threshold: int = HAMMING_FOREIGN) -> list[str]:
-        """查找异类向量"""
+    def find_distant(self, target_vec: int,
+                     threshold: int = SIMILARITY_ALIEN) -> list[str]:
+        """Find far-away vectors (dH ≥ threshold)."""
         res = []
         for t, v in self.data.items():
+            if self.potency.get(t, 0) == -1:
+                continue
             if self.hamming(target_vec, v) >= threshold:
                 self.active[t] = self.tick
                 res.append(t)
         return res
 
-    def is_silent(self, vec: int) -> bool:
-        """判断向量是否异常（距离所有已知向量都太远→静默收纳）"""
+    def is_anomaly(self, vec: int) -> bool:
+        """True if vector is too far from all known vectors."""
         if not self.data:
             return False
         min_d = min(self.hamming(vec, v) for v in self.data.values())
-        return min_d >= SILENT_DIST_THRESHOLD
+        return min_d >= ANOMALY_DISTANCE
 
-    # ========== 时序代谢 ==========
+    # ========== Tick & lifecycle ==========
 
-    def time_tick(self):
+    def advance_tick(self):
         self.tick += 1
 
-    def clean_dormant(self):
-        """清理长期低活跃度休眠向量"""
-        del_list = [t for t, last in self.active.items()
-                    if self.tick - last > PURGE_CYCLE_TICK]
-        for t in del_list:
+    def purge_stale(self):
+        """Delete vectors unused for > PURGE_AFTER ticks."""
+        doomed = [t for t, last in self.active.items()
+                  if self.tick - last > PURGE_AFTER]
+        for t in doomed:
             self.data.pop(t, None)
             self.active.pop(t, None)
             self.potency.pop(t, None)
             self.hits.pop(t, None)
 
-    # ========== 闲置归元（自保机制） ==========
-
-    def return_to_source(self):
-        """闲置归元：将低活跃低势能向量归元释放。
-        不删除，而是将其从活跃仓储移入静藏区（标记为归元态）。
-        归元后的向量不再参与聚类检索，但仍保留在data中以备后续唤醒。
-        """
-        归元数 = 0
+    def mark_stale(self):
+        """Mark low-activity entries as stale (-1) without deleting."""
+        count = 0
         for t in list(self.data.keys()):
             idle = self.tick - self.active.get(t, 0)
             pot = self.potency.get(t, 0)
-            # 闲置超过半周期 + 浅蓄势能 → 归元
-            if idle > PURGE_CYCLE_TICK + HALF_CYCLE and pot == 0:
-                self.active[t] = self.tick - PURGE_CYCLE_TICK * 2  # 标记为极旧
-                self.potency[t] = -1  # -1 = 归元态
-                归元数 += 1
-        return 归元数
+            if idle > PURGE_AFTER + HALF_CYCLE_LENGTH and pot == 0:
+                self.active[t] = self.tick - PURGE_AFTER * 2
+                self.potency[t] = -1
+                count += 1
+        return count
 
-    def is_returned(self, tag: str) -> bool:
-        return self.potency.get(tag, 0) == -1
-
-    # ========== 淤积分流 ==========
-
-    def decongest(self):
-        """仓储超过淤积阈值→自动分流清理"""
-        if self.size < CONGESTION_THRESHOLD:
+    def compact(self):
+        """Compact store: mark stale + purge."""
+        if self.size < COMPACT_AT:
             return 0
-        # 先归元
-        n = self.return_to_source()
-        # 再清理
-        self.clean_dormant()
+        n = self.mark_stale()
+        self.purge_stale()
         return n
 
     def status(self) -> dict:
@@ -164,14 +157,14 @@ class TongziCore:
             'total': self.size,
             'active': self.active_count,
             'tick': self.tick,
-            'returned': sum(1 for p in self.potency.values() if p == -1),
-            'deep': sum(1 for p in self.potency.values() if p >= 2),
+            'stale': sum(1 for p in self.potency.values() if p == -1),
+            'tier2': sum(1 for p in self.potency.values() if p >= 2),
         }
 
-    # ========== 持久化 ==========
+    # ========== Persistence ==========
 
-    def save_state(self, filepath: str) -> None:
-        """保存核心状态到JSON（含真实时间戳）"""
+    def save(self, filepath: str) -> None:
+        """Save store state to JSON with wall-clock timestamp."""
         from datetime import datetime
         state = {
             'data': self.data,
@@ -184,9 +177,9 @@ class TongziCore:
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(state, f, ensure_ascii=False, indent=2)
 
-    def load_state(self, filepath: str) -> bool:
-        """从JSON恢复核心状态。加载时用真实时间推进tick，
-        让两次浇水之间的自然流逝被系统感知。"""
+    def load(self, filepath: str) -> bool:
+        """Load store state. Advances tick by elapsed real hours.
+        Returns False on first run (no save file yet)."""
         from datetime import datetime
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
@@ -197,22 +190,19 @@ class TongziCore:
             self.potency = {k: int(v) for k, v in state['potency'].items()}
             old_tick = int(state['tick'])
 
-            # 用真实时间推进tick（1小时≈1tick，补上离线流逝）
+            # Compensate offline time: 1 tick ≈ 1 hour, capped at 72
             saved_at = state.get('saved_at', '')
             if saved_at:
                 try:
                     saved_dt = datetime.fromisoformat(saved_at)
-                    elapsed_hours = (datetime.now() - saved_dt).total_seconds() / 3600
-                    # 最少补1，最多补72（防异常）
-                    extra_ticks = max(1, int(elapsed_hours))
-                    extra_ticks = min(extra_ticks, 72)
-                    self.tick = old_tick + extra_ticks
+                    elapsed = (datetime.now() - saved_dt).total_seconds() / 3600
+                    extra = max(1, min(int(elapsed), 72))
+                    self.tick = old_tick + extra
                 except ValueError:
                     self.tick = old_tick + 1
             else:
                 self.tick = old_tick + 1
 
-            # 时间推进后，代谢由tick_cycle在后续应答中自然触发
             return True
         except (FileNotFoundError, KeyError, json.JSONDecodeError):
             return False

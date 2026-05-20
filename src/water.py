@@ -1,42 +1,42 @@
-"""童子自动浇花 v2.0 - 定时投喂本源粒子（持久化版）"""
+"""童子 v0.5 · watering script (persistent)
+=============================================
+Scheduled cron: 15 seed-concept words per session, 2x/day.
+State persists across runs via .tongzi_state.json.
+"""
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 
-from tongzi_core import TongziCore
-from tongzi_mao import ShiErMao
-from tongzi_data import NeiDan, STATE_FILE
-from tongzi_seeds import 注入种子, 气场标注
+from tongzi_core import BitStore
+from tongzi_mao import Balancer
+from tongzi_data import Responder, STATE_FILE
+from tongzi_seeds import inject_seeds, SEED_LABELS
 from datetime import datetime
 
 def water():
-    core = TongziCore()
-    mao = ShiErMao(core)
-    dan = NeiDan(core, mao)
+    store = BitStore()
+    balancer = Balancer(store)
+    responder = Responder(store, balancer)
 
-    # 尝试加载持久化状态
-    首次 = not dan.load_state()
+    is_first = not responder.load()
 
-    if 首次:
-        # 首次启动：注入60颗本源种子
-        注入种子(core)
-        for tag, aura in 气场标注.items():
-            if tag in core.data:
-                dan.气场记录[tag] = aura
-        print(f"[{datetime.now().strftime('%m-%d %H:%M')}] 首次筑基")
-        print(f"  注入种子：{core.size} 条")
+    if is_first:
+        inject_seeds(store)
+        for tag, label in SEED_LABELS.items():
+            if tag in store.data:
+                responder.cluster_labels[tag] = label
+        print(f"[{datetime.now().strftime('%m-%d %H:%M')}] first boot")
+        print(f"  seeds: {store.size}")
     else:
-        # 已有内丹：不再重复注入种子，直接继续
-        print(f"[{datetime.now().strftime('%m-%d %H:%M')}] 继续养护")
-        print(f"  内丹卦象：{core.size} 条  tick：{core.tick}")
-        # 检查是否需要补充种子（归元后可能种子不足）
-        if core.size < 50:
-            print(f"  种子不足({core.size})，补注...")
-            注入种子(core)
-            for tag, aura in 气场标注.items():
-                if tag in core.data:
-                    dan.气场记录[tag] = aura
+        print(f"[{datetime.now().strftime('%m-%d %H:%M')}] continue")
+        print(f"  entries: {store.size}  tick: {store.tick}")
+        if store.size < 50:
+            print(f"  low ({store.size}), re-seeding...")
+            inject_seeds(store)
+            for tag, label in SEED_LABELS.items():
+                if tag in store.data:
+                    responder.cluster_labels[tag] = label
 
-    # 每日浇花词库
+    # Daily watering words
     today_words = [
         "天地", "阴阳", "虚实", "动静", "冷暖",
         "明暗", "刚柔", "离合", "朝夕", "山海",
@@ -45,20 +45,18 @@ def water():
 
     results = []
     for w in today_words:
-        resp = dan.应答(w)
+        resp = responder.respond(w)
         results.append(f"  {w} → {resp}")
 
-    s = core.status()
-    气场数 = len(set(dan.气场记录.values()))
-    print(f"  卦象:{s['total']} 活跃:{s['active']} 气场:{气场数}")
-    print(f"  归元:{s['returned']} 沉敛:{s['deep']}")
+    s = store.status()
+    clusters = len(set(responder.cluster_labels.values()))
+    print(f"  entries:{s['total']} active:{s['active']} clusters:{clusters}")
+    print(f"  stale:{s['stale']} tier2:{s['tier2']}")
     for r in results[:5]:
         print(r)
-    print(f"  ... 共{len(results)}条")
-
-    # 保存状态
-    dan.save_state()
-    print(f"  状态已保存 -> {STATE_FILE}")
+    print(f"  ... {len(results)} total")
+    responder.save()
+    print(f"  saved → {STATE_FILE}")
 
 if __name__ == "__main__":
     water()

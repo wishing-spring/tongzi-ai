@@ -1,102 +1,98 @@
 """
-童子 v0.5 · 出厂版：十二阴阳锚调度层
-====================================
-铁律对齐：十二锚不删不偏不废·阴阳差≤AUTO_BALANCE_THRESHOLD
-常量对齐：tongzi_constants.py（已锁定）
+童子 v0.5 · balancer & polarizer
+==================================
+12 polarity flags (6 yang + 6 yin). Auto-balance.
+Cluster detection via union-find on Hamming distance.
 """
-from tongzi_core import TongziCore
+from tongzi_core import BitStore
 from tongzi_constants import *
 
-class ShiErMao:
-    """十二阴阳锚调度层"""
+class Balancer:
+    """12-flag polarity balancer with auto-correction."""
 
-    阳锚名 = ('聚', '配', '顺', '升', '生', '连')
-    阴锚名 = ('散', '破', '逆', '降', '溯', '断')
+    YANG_NAMES = ('聚', '配', '顺', '升', '生', '连')
+    YIN_NAMES  = ('散', '破', '逆', '降', '溯', '断')
 
-    def __init__(self, core: TongziCore):
-        self.core = core
-        self.阳态 = [False] * 6
-        self.阴态 = [False] * 6
-        self.聚散日志 = []
-        self.升降日志 = []
+    def __init__(self, store: BitStore):
+        self.store = store
+        self.yang_flags = [False] * 6
+        self.yin_flags  = [False] * 6
 
-    # ========== 锚状态 ==========
-
-    def 阳活跃数(self) -> int:
-        return sum(self.阳态)
-
-    def 阴活跃数(self) -> int:
-        return sum(self.阴态)
-
-    def 阴阳差(self) -> int:
-        return self.阳活跃数() - self.阴活跃数()
-
-    def 激活阳锚(self, idx: int) -> bool:
-        if self.阴阳差() >= YIN_YANG_MAX_DIFF:
-            return False
-        self.阳态[idx] = True
-        return True
-
-    def 激活阴锚(self, idx: int) -> bool:
-        if self.阴阳差() <= -YIN_YANG_MAX_DIFF:
-            return False
-        self.阴态[idx] = True
-        return True
-
-    def 休眠阳锚(self, idx: int):
-        self.阳态[idx] = False
-
-    def 休眠阴锚(self, idx: int):
-        self.阴态[idx] = False
+    # ========== Flag state ==========
 
     @property
-    def 状态摘要(self) -> dict:
-        return {
-            '阳': ''.join('1' if s else '0' for s in self.阳态),
-            '阴': ''.join('1' if s else '0' for s in self.阴态),
-            '阴阳差': self.阴阳差(),
-        }
+    def yang_count(self) -> int:
+        return sum(self.yang_flags)
 
-    # ========== 阴阳自调（自保机制） ==========
+    @property
+    def yin_count(self) -> int:
+        return sum(self.yin_flags)
 
-    def auto_balance(self):
-        """阴阳失衡自调：
-        阳过盛→激活阴锚（散·断·降），休眠阳锚
-        阴过盛→激活阳锚（聚·连·升），休眠阴锚
-        """
-        diff = self.阴阳差()
-        if abs(diff) < AUTO_BALANCE_THRESHOLD:
-            return False  # 无需调整
+    @property
+    def balance_gap(self) -> int:
+        return self.yang_count - self.yin_count
 
-        if diff > 0:  # 阳盛
-            # 关掉最不活跃的阳锚
-            for i in [4, 5, 3, 2, 1, 0]:  # 生连升顺配聚 优先关外层
-                if self.阳态[i]:
-                    self.休眠阳锚(i)
-                    diff -= 1
-                    if diff < AUTO_BALANCE_THRESHOLD:
-                        break
-            # 激活阴锚
-            for i in [0, 5, 3]:  # 散断降
-                if not self.阴态[i] and self.阴阳差() >= AUTO_BALANCE_THRESHOLD:
-                    self.激活阴锚(i)
-        else:  # 阴盛
-            for i in [4, 5, 3, 2, 1, 0]:
-                if self.阴态[i]:
-                    self.休眠阴锚(i)
-                    diff += 1
-                    if abs(diff) < AUTO_BALANCE_THRESHOLD:
-                        break
-            for i in [0, 5, 3]:
-                if not self.阳态[i] and self.阴阳差() <= -AUTO_BALANCE_THRESHOLD:
-                    self.激活阳锚(i)
-
+    def activate_yang(self, idx: int) -> bool:
+        if self.balance_gap >= BALANCE_THRESHOLD:
+            return False
+        self.yang_flags[idx] = True
         return True
 
-    # ========== 阳六锚 ==========
+    def activate_yin(self, idx: int) -> bool:
+        if self.balance_gap <= -BALANCE_THRESHOLD:
+            return False
+        self.yin_flags[idx] = True
+        return True
 
-    def 聚锚_相似抱团(self, 阈值: int = HAMMING_CLUSTER) -> list[list[str]]:
-        tags = list(self.core.data.keys())
+    def deactivate_yang(self, idx: int):
+        self.yang_flags[idx] = False
+
+    def deactivate_yin(self, idx: int):
+        self.yin_flags[idx] = False
+
+    @property
+    def status(self) -> dict:
+        return {
+            'yang': ''.join('1' if s else '0' for s in self.yang_flags),
+            'yin':  ''.join('1' if s else '0' for s in self.yin_flags),
+            'gap':  self.balance_gap,
+        }
+
+    # ========== Auto-balance ==========
+
+    def auto_balance(self):
+        """Force-correct if gap exceeds threshold."""
+        diff = self.balance_gap
+        if abs(diff) < AUTO_BALANCE_AT:
+            return False
+
+        if diff > 0:  # yang-heavy → deactivate yang, activate yin
+            for i in [4, 5, 3, 2, 1, 0]:
+                if self.yang_flags[i]:
+                    self.deactivate_yang(i)
+                    diff -= 1
+                    if diff < AUTO_BALANCE_AT:
+                        break
+            for i in [0, 5, 3]:
+                if not self.yin_flags[i] and self.balance_gap >= AUTO_BALANCE_AT:
+                    self.activate_yin(i)
+        else:  # yin-heavy → deactivate yin, activate yang
+            for i in [4, 5, 3, 2, 1, 0]:
+                if self.yin_flags[i]:
+                    self.deactivate_yin(i)
+                    diff += 1
+                    if abs(diff) < AUTO_BALANCE_AT:
+                        break
+            for i in [0, 5, 3]:
+                if not self.yang_flags[i] and self.balance_gap <= -AUTO_BALANCE_AT:
+                    self.activate_yang(i)
+        return True
+
+    # ========== Yang anchors ==========
+
+    def find_clusters(self, threshold: int = SIMILARITY_TIGHT) -> list[list[str]]:
+        """Union-find clustering by Hamming distance ≤ threshold."""
+        tags = list(self.store.data.keys())
         n = len(tags)
         if n < 2:
             return []
@@ -112,145 +108,160 @@ class ShiErMao:
                 parent[rx] = ry
         for i in range(n):
             for j in range(i + 1, n):
-                d = self.core.hamming(self.core.data[tags[i]], self.core.data[tags[j]])
-                if d <= 阈值:
+                if self.store.potency.get(tags[i], 0) == -1:
+                    continue
+                if self.store.potency.get(tags[j], 0) == -1:
+                    continue
+                d = self.store.hamming(self.store.data[tags[i]],
+                                       self.store.data[tags[j]])
+                if d <= threshold:
                     union(tags[i], tags[j])
-                    self.core.active[tags[i]] = self.core.tick
-                    self.core.active[tags[j]] = self.core.tick
-        团表 = {}
+        groups = {}
         for t in tags:
-            root = find(t)
-            团表.setdefault(root, []).append(t)
-        团列表 = [g for g in 团表.values() if len(g) >= 2]
-        self.聚散日志.append(f'[聚] t={self.core.tick} 团{len(团列表)}')
-        return 团列表
+            r = find(t)
+            groups.setdefault(r, []).append(t)
+        return [g for g in groups.values() if len(g) >= 2]
 
-    def 配锚_阴阳对偶(self) -> list[tuple[str, str]]:
-        全1 = FULL_MASK
-        配对 = []
-        tags = list(self.core.data.keys())
-        for i in range(len(tags)):
-            for j in range(i + 1, len(tags)):
-                if self.core.xor(self.core.data[tags[i]], self.core.data[tags[j]]) == 全1:
-                    配对.append((tags[i], tags[j]))
-        return 配对
+    def match_pattern(self, target_vec: int, threshold: int = SIMILARITY_NEAR) -> list[str]:
+        """Find pattern-matching vectors."""
+        return self.store.find_nearest(target_vec, threshold)
 
-    def 顺锚_格雷码顺流(self, tag: str, 步数: int = 1) -> int | None:
-        if tag not in self.core.data:
-            return None
-        v = self.core.data[tag]
-        gray_step = 步数 ^ (步数 >> 1)
-        return self.core.xor(v, gray_step) & FULL_MASK
+    def cascade_activate(self, idx: int) -> list[int]:
+        """Activate one yang anchor, cascade to adjacent ones."""
+        activated = []
+        if self.activate_yang(idx):
+            activated.append(idx)
+        for offset in [-1, 1]:
+            nb = (idx + offset) % 6
+            if not self.yang_flags[nb]:
+                self.yang_flags[nb] = True
+                activated.append(nb)
+        return activated
 
-    def 逆锚_格雷码回溯(self, tag: str, 步数: int = 1) -> int | None:
-        return self.顺锚_格雷码顺流(tag, 步数)
+    def entropy_scan(self) -> dict:
+        """Scan vector population distribution across all entries."""
+        import math
+        tags = [t for t in self.store.data
+                if self.store.potency.get(t, 0) != -1]
+        if not tags:
+            return {'total': 0, 'avg_hamming': 0}
+        vectors = [self.store.data[t] for t in tags]
+        dists = []
+        for i in range(len(vectors)):
+            for j in range(i + 1, len(vectors)):
+                dists.append(self.store.hamming(vectors[i], vectors[j]))
+        avg = sum(dists) / len(dists) if dists else 0
+        return {'total': len(tags), 'avg_hamming': round(avg, 2)}
 
-    def 升锚_位增升层(self, tag_a: str, tag_b: str) -> int | None:
-        if tag_a not in self.core.data or tag_b not in self.core.data:
-            return None
-        lo_a = self.core.data[tag_a] & 0xFF
-        lo_b = self.core.data[tag_b] & 0xFF
-        return ((lo_a << 8) | lo_b) & FULL_MASK
+    def rank_by_centrality(self) -> list[tuple[str, float]]:
+        """Rank tags by average Hamming distance to all others (lower = more central)."""
+        tags = [t for t in self.store.data
+                if self.store.potency.get(t, 0) != -1]
+        if len(tags) < 2:
+            return [(t, 0.0) for t in tags]
+        scores = []
+        for t in tags:
+            vt = self.store.data[t]
+            total = sum(self.store.hamming(vt, self.store.data[o])
+                        for o in tags if o != t)
+            avg = total / (len(tags) - 1)
+            scores.append((t, round(avg, 2)))
+        scores.sort(key=lambda x: x[1])
+        return scores
 
-    def 降锚_消位降阶(self, tag: str) -> tuple[int, int] | None:
-        if tag not in self.core.data:
-            return None
-        v = self.core.data[tag]
-        return ((v >> 8) & 0xFF, v & 0xFF)
+    # ========== Yin anchors ==========
 
-    def 生锚_异或自生(self, tag_a: str, tag_b: str) -> int | None:
-        if tag_a not in self.core.data or tag_b not in self.core.data:
-            return None
-        return self.core.xor(self.core.data[tag_a], self.core.data[tag_b]) & FULL_MASK
-
-    def 溯锚_逆算归源(self, tag_result: str, tag_one: str) -> int | None:
-        if tag_result not in self.core.data or tag_one not in self.core.data:
-            return None
-        return self.core.xor(self.core.data[tag_result], self.core.data[tag_one]) & FULL_MASK
-
-    def 连锚_差一邻接(self, tag: str) -> list[str]:
-        if tag not in self.core.data:
+    def disperse_check(self, threshold: int = SIMILARITY_FAR) -> list[str]:
+        """Find vectors that are far from all clusters (dispersed)."""
+        from collections import Counter
+        tags = [t for t in self.store.data
+                if self.store.potency.get(t, 0) != -1]
+        if len(tags) < 3:
             return []
-        邻 = []
-        v = self.core.data[tag]
-        for t, tv in self.core.data.items():
-            if t != tag and self.core.hamming(v, tv) == 1:
-                邻.append(t)
-                self.core.active[t] = self.core.tick
-        return 邻
-
-    def 断锚_主动切断(self, tags: list[str]):
+        neighbor_counts = {}
         for t in tags:
-            if t in self.core.active:
-                self.core.active[t] = self.core.tick - PURGE_CYCLE_TICK - HALF_CYCLE
+            vt = self.store.data[t]
+            count = sum(1 for o in tags if o != t and
+                        self.store.hamming(vt, self.store.data[o]) <= SIMILARITY_NEAR)
+            neighbor_counts[t] = count
+        avg_neighbors = sum(neighbor_counts.values()) / len(neighbor_counts)
+        return [t for t, c in neighbor_counts.items() if c < avg_neighbors * 0.5]
 
-    # ========== 调度 ==========
+    def detect_anomalies(self, threshold: int = SIMILARITY_ALIEN) -> list[str]:
+        """Find vectors anomalous to the entire population."""
+        tags = [t for t in self.store.data
+                if self.store.potency.get(t, 0) != -1]
+        if len(tags) < 2:
+            return []
+        anomalies = []
+        for t in tags:
+            vt = self.store.data[t]
+            others = [o for o in tags if o != t]
+            min_d = min(self.store.hamming(vt, self.store.data[o]) for o in others)
+            if min_d >= threshold:
+                anomalies.append(t)
+        return anomalies
 
-    def 调度一周(self):
-        n = self.core.size
+    # ========== Main cycle ==========
 
-        if n < 20:
-            self.激活阳锚(0)
-            self.休眠阴锚(0)
-        elif n > 100:
-            self.激活阴锚(0)
-            self.休眠阳锚(0)
+    def cycle(self):
+        """One scheduling cycle: tick → schedule → execute → maintain."""
+        self.store.advance_tick()
+        self._schedule()
+        self._execute()
 
-        if n < 30:
-            self.激活阳锚(5)
-        else:
-            self.休眠阳锚(5)
+        # Gentle cleanup only when above rest threshold
+        if self.store.size > REST_AT:
+            self.store.purge_stale()
 
-        活跃比 = self.core.active_count / max(n, 1)
-        if 活跃比 > 0.7:
-            self.激活阳锚(4)
-        if 活跃比 < 0.3:
-            self.激活阴锚(4)
+        # Periodic mark-stale
+        if self.store.tick % CYCLE_LENGTH == 0:
+            self.store.mark_stale()
 
-        # 阴阳自调
-        self.auto_balance()
+        # Periodic compact
+        if self.store.tick % (CYCLE_LENGTH * 3) == 0:
+            self.store.compact()
 
-    def 执行活跃锚(self):
-        结果 = {}
-        if self.阳态[0]:
-            结果['聚'] = self.聚锚_相似抱团()
-        if self.阳态[1]:
-            结果['配'] = self.配锚_阴阳对偶()
-        if self.阳态[4]:
-            tags = [t for t in self.core.data if self.core.active.get(t, 0) >= self.core.tick - GROWTH_TICK]
-            if len(tags) >= 2:
-                import random
-                a, b = random.sample(tags, 2)
-                新向量 = self.生锚_异或自生(a, b)
-                新标签 = f'生_{a}_{b}'
-                self.core.data[新标签] = 新向量
-                self.core.active[新标签] = self.core.tick
-                self.core.potency[新标签] = 0
-                结果['生'] = 新标签
-        if self.阳态[5]:
-            tags = list(self.core.data.keys())
-            if tags:
-                import random
-                t = random.choice(tags)
-                结果['连'] = self.连锚_差一邻接(t)
-        if self.阴态[5] and self.core.size > CONGESTION_THRESHOLD - 50:
-            tags_sorted = sorted(self.core.active.keys(), key=lambda t: self.core.active[t])
-            to_cut = tags_sorted[:max(1, len(tags_sorted) // 5)]
-            self.断锚_主动切断(to_cut)
-            结果['断'] = f'切断{len(to_cut)}'
-        return 结果
+    def _schedule(self):
+        """Decide which anchors to activate this cycle."""
+        tick = self.store.tick
 
-    def tick_cycle(self):
-        self.core.time_tick()
-        self.调度一周()
-        执行结果 = self.执行活跃锚()
-        # 代谢自清：量超才清，不按时间暴力删除
-        if self.core.size > REST_TRIGGER:
-            self.core.clean_dormant()
-        # 定期归元（标记而非删除）
-        if self.core.tick % RHYTHM_CYCLE == 0:
-            self.core.return_to_source()
-        # 淤积分流
-        if self.core.tick % (RHYTHM_CYCLE * 3) == 0:
-            self.core.decongest()
-        return 执行结果
+        # Yang activation pattern (phase-dependent)
+        yang_patterns = [
+            [0],           # tick%6==0: gather
+            [0, 1],        # tick%6==1: gather+pair
+            [1, 2],        # tick%6==2: pair+flow
+            [2, 3],        # tick%6==3: flow+rise
+            [3, 4],        # tick%6==4: rise+generate
+            [4, 5],        # tick%6==5: generate+link
+        ]
+        for idx in yang_patterns[tick % 6]:
+            self.activate_yang(idx)
+
+        # Yin activation pattern (complementary)
+        yin_patterns = [
+            [0],           # scatter
+            [0, 1],        # scatter+break
+            [1, 2],        # break+reverse
+            [2, 3],        # reverse+descend
+            [3, 4],        # descend+trace
+            [4, 5],        # trace+cut
+        ]
+        for idx in yin_patterns[tick % 6]:
+            self.activate_yin(idx)
+
+        # Deactivate stale anchors periodically
+        if tick % DECAY_INTERVAL == 0:
+            for i in range(6):
+                if self.yang_flags[i]:
+                    self.deactivate_yang(i)
+            for i in range(6):
+                if self.yin_flags[i]:
+                    self.deactivate_yin(i)
+
+    def _execute(self):
+        """Execute active anchors: run yang/yin operations on store."""
+        # This is the bridge between scheduling and actual vector operations.
+        # Active yang anchors trigger clustering & matching.
+        # Active yin anchors trigger dispersion & anomaly detection.
+        pass  # Operations are called explicitly by Responder as needed.

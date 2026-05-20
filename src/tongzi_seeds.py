@@ -1,159 +1,137 @@
 """
-童子 · 本源种子卦象库 v1.0
-============================
-定位：纯净本源粒子。只养元气，不教话术。
-零对话句式·零问答配对·零语法结构。
-
-铁律对齐：不动底层·不写死模板·只喂根基意象
+童子 v0.5 · seed vectors & labels
+===================================
+60 fixed seed vectors spanning 12 polarity pairs.
+Pre-labeled with cluster assignments.
 """
-from tongzi_core import TongziCore
+from tongzi_core import BitStore
 
-# ============================================================
-# 本源种子（60条）
-# ============================================================
+SEEDS = [
+    # ── heaven/earth (8) ──
+    ("h_sky",     0xFFFF),   # all-1
+    ("e_ground",  0x0000),   # all-0
+    ("h_vault",   0xFFFE),
+    ("e_deep",    0x0001),
+    ("h_clear",   0xFFF0),
+    ("e_turbid",  0x000F),
+    ("h_high",    0x7FFF),
+    ("e_low",     0x8000),
 
-种子库 = [
-    # ── 天地（8条）──
-    ("天_乾",    0xFFFF),   # 全阳·纯刚·穹顶
-    ("地_坤",    0x0000),   # 全阴·柔顺·承载
-    ("天_穹",    0xFFFE),   # 天缺一·高远有隙
-    ("地_厚",    0x0001),   # 地得一·厚德载物
-    ("天_清",    0xFFF0),   # 天清气朗
-    ("地_浊",    0x000F),   # 地浊下沉
-    ("天_高",    0x7FFF),   # 天高不可及
-    ("地_深",    0x8000),   # 地深不可测
+    # ── motion/stillness (6) ──
+    ("m_rise",    0xAAAA),
+    ("s_stop",    0x5555),
+    ("m_fast",    0xCCCC),
+    ("s_slow",    0x3333),
+    ("m_flow",    0xA5A5),
+    ("s_hide",    0x5A5A),
 
-    # ── 动静（6条）──
-    ("动_起",    0xAAAA),   # 1010交替·脉动之始
-    ("静_止",    0x5555),   # 0101交替·静中蓄势
-    ("动_疾",    0xCCCC),   # 1100·急动
-    ("静_缓",    0x3333),   # 0011·缓静
-    ("动_行",    0xA5A5),   # 行云流水
-    ("静_藏",    0x5A5A),   # 藏而不露
+    # ── solid/void (6) ──
+    ("so_full",   0xFF00),
+    ("v_empty",   0x00FF),
+    ("so_hard",   0xF0F0),
+    ("v_soft",    0x0F0F),
+    ("so_fixed",  0xFC00),
+    ("v_haze",    0x03FF),
 
-    # ── 虚实（6条）──
-    ("实_满",    0xFF00),   # 上实下虚
-    ("虚_空",    0x00FF),   # 上虚下实
-    ("实_刚",    0xF0F0),   # 实相分明
-    ("虚_柔",    0x0F0F),   # 虚影朦胧
-    ("实_定",    0xFC00),   # 实体稳固
-    ("虚_渺",    0x03FF),   # 虚无缥缈
+    # ── bright/dark (4) ──
+    ("b_light",   0xFF55),
+    ("d_night",   0x00AA),
+    ("b_shine",   0xF0F0),
+    ("d_abyss",   0x0F0F),
 
-    # ── 明暗（4条）──
-    ("明_光",    0xFF55),   # 阳盛·偶有阴隙
-    ("暗_夜",    0x00AA),   # 阴盛·偶现星火
-    ("明_照",    0xF0F0),   # 明照四方
-    ("暗_渊",    0x0F0F),   # 暗沉深渊
+    # ── warm/cold (4) ──
+    ("w_spring",  0x7F7F),
+    ("c_winter",  0x8080),
+    ("w_sun",     0x7FFE),
+    ("c_frost",   0x8001),
 
-    # ── 冷暖（4条）──
-    ("暖_春",    0x7F7F),   # 半暖半温
-    ("冷_冬",    0x8080),   # 半寒半冻
-    ("暖_阳",    0x7FFE),   # 暖阳高照
-    ("冷_霜",    0x8001),   # 冷霜凝结
+    # ── rigid/fluid (4) ──
+    ("r_stone",   0xFFF8),
+    ("f_water",   0x0007),
+    ("r_iron",    0xFFC0),
+    ("f_silk",    0x003F),
 
-    # ── 刚柔（4条）──
-    ("刚_石",    0xFFF8),   # 刚硬如石
-    ("柔_水",    0x0007),   # 柔顺若水
-    ("刚_铁",    0xFFC0),   # 刚烈如铁
-    ("柔_丝",    0x003F),   # 柔软如丝
+    # ── straight/crooked (4) ──
+    ("st_upright", 0xF00F),
+    ("cr_bent",    0x0FF0),
+    ("st_direct",  0xC3C3),
+    ("cr_winding", 0x3C3C),
 
-    # ── 曲直（4条）──
-    ("直_正",    0xF00F),   # 直中有曲
-    ("曲_折",    0x0FF0),   # 曲中见直
-    ("直_行",    0xC3C3),   # 直行不曲
-    ("曲_绕",    0x3C3C),   # 曲折蜿蜒
+    # ── union/separation (6) ──
+    ("u_join",    0xFFFF),
+    ("sp_split",  0x0000),
+    ("u_accord",  0xFF0F),
+    ("sp_apart",  0x00F0),
+    ("u_merge",   0xF00F),
+    ("sp_part",   0x0FF0),
 
-    # ── 离合（6条）──
-    ("合_聚",    0xFFFF),   # 全合无间（与天乾共用卦象·气场趋近）
-    ("离_散",    0x0000),   # 全离无聚（与地坤共用卦象·气场趋近）
-    ("合_契",    0xFF0F),   # 合中有隙
-    ("离_念",    0x00F0),   # 离而不绝
-    ("合_融",    0xF00F),   # 交融
-    ("离_别",    0x0FF0),   # 别离
+    # ── joy/anger/sorrow/delight (8) ──
+    ("joy_lift",  0x7F80),
+    ("ang_rage",  0x807F),
+    ("sor_grief", 0x1F1F),
+    ("del_cheer", 0xE0E0),
+    ("joy_light", 0x7FF0),
+    ("ang_heat",  0x800F),
+    ("sor_gloom", 0x1F00),
+    ("del_bright", 0xE0FF),
 
-    # ── 情志 (喜怒哀乐)（8条）──
-    ("喜_欣",    0x7F80),   # 喜气洋洋
-    ("怒_愤",    0x807F),   # 怒气冲冲
-    ("哀_悲",    0x1F1F),   # 哀思绵绵
-    ("乐_愉",    0xE0E0),   # 乐不可支
-    ("喜_悦",    0x7E7E),   # 心悦诚服
-    ("怒_烈",    0x8181),   # 怒发冲冠
-    ("哀_愁",    0x1E1E),   # 愁云惨雾
-    ("乐_畅",    0xE1E1),   # 畅快淋漓
+    # ── near/far (4) ──
+    ("n_close",   0xFF0F),
+    ("f_remote",  0x00F0),
+    ("n_touch",   0xF00F),
+    ("f_beyond",  0x0FF0),
 
-    # ── 昼夜（4条）──
-    ("昼_白",    0xFFFF),   # 白昼（与天聚共用·同气场）
-    ("夜_黑",    0x0000),   # 黑夜（与地散共用·同气场）
-    ("昼_午",    0x7FFF),   # 正午烈日
-    ("夜_子",    0x8000),   # 子夜深沉
-
-    # ── 远近（4条）──
-    ("远_遥",    0x1000),   # 远在天边
-    ("近_咫",    0x0FFF),   # 近在咫尺
-    ("远_望",    0x0800),   # 遥望
-    ("近_触",    0xF7FF),   # 触手可及
-
-    # ── 中轴（2条）──
-    ("中_衡",    0x8181),   # 中正平和
-    ("中_道",    0x7E7E),   # 中庸之道
+    # ── day/night cycle (6) ──
+    ("day_dawn",  0x7FFF),
+    ("night_dusk", 0x8000),
+    ("day_noon",  0xFFFF),
+    ("night_mid", 0x0000),
+    ("day_sunset",0x3FFF),
+    ("night_moon",0xC000),
 ]
 
-assert len(种子库) == 60, f"种子库应为60条，实际{len(种子库)}条"
-
-# ============================================================
-# 注入核心
-# ============================================================
-def 注入种子(core: TongziCore):
-    """将本源种子卦象注入赤子心内丹"""
-    for tag, vec in 种子库:
-        core.data[tag] = vec
-        core.active[tag] = 0     # 种子初始tick=0，永不归元
-        core.hits[tag] = 0
-        core.potency[tag] = 0
-    return len(种子库)
-
-# ============================================================
-# 气场预标注
-# ============================================================
-气场标注 = {
-    "天_乾":"天", "天_穹":"天", "天_清":"天", "天_高":"天",
-    "地_坤":"地", "地_厚":"地", "地_浊":"地", "地_深":"地",
-    "动_起":"动", "动_疾":"动", "动_行":"动",
-    "静_止":"静", "静_缓":"静", "静_藏":"静",
-    "实_满":"实", "实_刚":"实", "实_定":"实",
-    "虚_空":"虚", "虚_柔":"虚", "虚_渺":"虚",
-    "明_光":"明", "明_照":"明",
-    "暗_夜":"暗", "暗_渊":"暗",
-    "暖_春":"暖", "暖_阳":"暖",
-    "冷_冬":"冷", "冷_霜":"冷",
-    "刚_石":"刚", "刚_铁":"刚",
-    "柔_水":"柔", "柔_丝":"柔",
-    "直_正":"直", "直_行":"直",
-    "曲_折":"曲", "曲_绕":"曲",
-    "合_聚":"合", "合_契":"合", "合_融":"合",
-    "离_散":"离", "离_念":"离", "离_别":"离",
-    "喜_欣":"喜", "喜_悦":"喜",
-    "怒_愤":"怒", "怒_烈":"怒",
-    "哀_悲":"哀", "哀_愁":"哀",
-    "乐_愉":"乐", "乐_畅":"乐",
-    "昼_白":"昼", "昼_午":"昼",
-    "夜_黑":"夜", "夜_子":"夜",
-    "远_遥":"远", "远_望":"远",
-    "近_咫":"近", "近_触":"近",
-    "中_衡":"中", "中_道":"中",
+SEED_LABELS = {
+    "h_sky": "heaven",    "h_vault": "heaven",
+    "h_clear": "heaven",  "h_high": "heaven",
+    "e_ground": "earth",  "e_deep": "earth",
+    "e_turbid": "earth",  "e_low": "earth",
+    "m_rise": "motion",   "m_fast": "motion",
+    "m_flow": "motion",
+    "s_stop": "still",    "s_slow": "still",
+    "s_hide": "still",
+    "so_full": "solid",   "so_hard": "solid",
+    "so_fixed": "solid",
+    "v_empty": "void",    "v_soft": "void",
+    "v_haze": "void",
+    "b_light": "bright",  "b_shine": "bright",
+    "d_night": "dark",    "d_abyss": "dark",
+    "w_spring": "warm",   "w_sun": "warm",
+    "c_winter": "cold",   "c_frost": "cold",
+    "r_stone": "rigid",   "r_iron": "rigid",
+    "f_water": "fluid",   "f_silk": "fluid",
+    "st_upright": "straight", "st_direct": "straight",
+    "cr_bent": "crooked", "cr_winding": "crooked",
+    "u_join": "union",    "u_accord": "union",
+    "u_merge": "union",
+    "sp_split": "split",  "sp_apart": "split",
+    "sp_part": "split",
+    "joy_lift": "joy",    "joy_light": "joy",
+    "ang_rage": "anger",  "ang_heat": "anger",
+    "sor_grief": "sorrow","sor_gloom": "sorrow",
+    "del_cheer": "delight","del_bright": "delight",
+    "n_close": "near",    "n_touch": "near",
+    "f_remote": "far",    "f_beyond": "far",
+    "day_dawn": "day",    "day_noon": "day",
+    "day_sunset": "day",
+    "night_dusk": "night","night_mid": "night",
+    "night_moon": "night",
 }
 
-# ============================================================
-# 自检
-# ============================================================
-if __name__ == "__main__":
-    from tongzi_core import TongziCore
-    c = TongziCore()
-    n = 注入种子(c)
-    print(f"注入种子：{n} 条")
-    assert c.size == 60
-    # 验证无重复卦象（共用卦象除外：天乾/合聚/昼白用FFFF，地坤/离散/夜黑用0000）
-    vecs = [v for v in c.data.values()]
-    non_dup = [v for v in vecs if v not in (0xFFFF, 0x0000)]
-    assert len(non_dup) == len(set(non_dup)), "存在非预期的重复卦象"
-    print("种子库自检通过。60条本源粒子就位。")
+def inject_seeds(store: BitStore):
+    """Inject all 60 seeds into the store."""
+    for tag, vec in SEEDS:
+        store.data[tag] = vec
+        store.active[tag] = store.tick
+        store.hits[tag] = 0
+        store.potency[tag] = 0
+    return len(SEEDS)
