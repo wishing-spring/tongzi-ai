@@ -1,12 +1,16 @@
 """
-童子 v0.5 · global constants (locked)
-======================================
-Source: Euler identity → discrete mapping
-  e^(iπ)+1=0  → primary rhythm
-  φ=(1+√5)/2  → ratio rules
+童子 v0.5 · global constants
+=============================
+Source: φ-based gua pyramid, layered GF(2) mechanics.
 
-ALL CONSTANTS LOCKED. Do not modify.
+  Δ(n) = ⌊√n⌋        — balance threshold, slow growth
+  C(n) = ⌊n/3⌋ + 4   — cycle length, linear growth
+  S(n) = 2ⁿ          — single-layer state cap
+
+When VEC_DIM changes, threshold & cycle auto-adjust.
 """
+import math
+
 # ============================================================
 # 1. Vector space (fixed)
 # ============================================================
@@ -14,20 +18,20 @@ VEC_DIM = 16                     # 16-bit F₂ space
 FULL_MASK = (1 << VEC_DIM) - 1   # 0xFFFF
 
 # ============================================================
-# 2. Rhythm (discretized from e, π, φ)
+# 2. Rhythm — auto-derived from VEC_DIM
 # ============================================================
-CYCLE_LENGTH = 7          # main cycle (ticks)
-HALF_CYCLE_LENGTH = 3     # half-cycle
-QUARTER_CYCLE_LENGTH = 2  # quarter-cycle
+CYCLE_LENGTH = VEC_DIM // 3 + 4           # ⌊n/3⌋+4 main cycle (ticks)
+HALF_CYCLE_LENGTH = (VEC_DIM // 3 + 4) // 2     # half-cycle
+QUARTER_CYCLE_LENGTH = (VEC_DIM // 3 + 4) // 4  # quarter-cycle
 
 GROWTH_INTERVAL = 3       # growth pulse every N ticks
 DECAY_INTERVAL = 5        # decay check every N ticks
 
 # ============================================================
-# 3. Balance window (derived from φ ≈ 1.618)
+# 3. Balance window — auto-derived from VEC_DIM
 # ============================================================
-BALANCE_THRESHOLD = 2     # max yang-yin gap
-BALANCE_WARN = 1          # warning gap
+BALANCE_THRESHOLD = int(math.isqrt(VEC_DIM))     # ⌊√n⌋ max yang-yin gap
+BALANCE_WARN = BALANCE_THRESHOLD // 2 if BALANCE_THRESHOLD >= 2 else 1
 
 # ============================================================
 # 4. Similarity thresholds (Hamming distance in F₂^16)
