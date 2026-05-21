@@ -4,3 +4,7 @@ src/_quick_test.py
 src/_test_merge.py
 src/_test_chain.py
 src/_test_output.txt
+
+# Python cache
+__pycache__/
+*.pyc
