@@ -1,3 +1,11 @@
+# Private workspace — never track
+MEMORY.md
+memory/
+PROFILE.md
+AGENTS.md
+SOUL.md
+HEARTBEAT.md
+
 # Temp files
 *.png
 src/_quick_test.py
