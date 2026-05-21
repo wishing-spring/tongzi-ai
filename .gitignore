@@ -1,6 +1,6 @@
-__pycache__/
-*.pyc
-*.pyo
-.DS_Store
-*.swp
-.tongzi_state.json  
+# Temp files
+*.png
+src/_quick_test.py
+src/_test_merge.py
+src/_test_chain.py
+src/_test_output.txt
