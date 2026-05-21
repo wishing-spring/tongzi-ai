@@ -1,0 +1,133 @@
+============================================================
+INGEST: 20 seeds
+============================================================
+  火    → vec=0xf732  id_t=107  id_l=16
+  水    → vec=0xc151  id_t=52  id_l=16
+  天    → vec=0x94f8  id_t=41  id_l=16
+  地    → vec=0x7c15  id_t=48  id_l=16
+  山    → vec=0xccb4  id_t=113  id_l=16
+  雷    → vec=0xbdcf  id_t=247  id_l=16
+  风    → vec=0x7ed2  id_t=206  id_l=16
+  泽    → vec=0x73c6  id_t=253  id_l=16
+  日    → vec=0xd7e7  id_t=229  id_l=16
+  月    → vec=0x3779  id_t= 8  id_l=16
+  星    → vec=0xbfa5  id_t=31  id_l=16
+  光    → vec=0x44de  id_t=73  id_l=16
+  暗    → vec=0x2b90  id_t=151  id_l=16
+  冷    → vec=0xefb9  id_t=183  id_l=16
+  热    → vec=0xe72f  id_t=237  id_l=16
+  干    → vec=0x9969  id_t=114  id_l=16
+  湿    → vec=0x3d37  id_t=127  id_l=16
+  动    → vec=0x6437  id_t=168  id_l=16
+  静    → vec=0xfa72  id_t=89  id_l=16
+  空    → vec=0x69e9  id_t=122  id_l=16
+
+  Total gua: 20
+
+============================================================
+RUNNING: 100 ticks (VEC_DIM=16)
+============================================================
+
+--- tick  10 ---
+  total=20  active=20  solid=0  max_layer=16
+  [静   ] vec=0xf732  e=150  hit= 0  sol=False  id_t=107
+  [干   ] vec=0xc151  e=150  hit= 0  sol=False  id_t=52
+  [山   ] vec=0x94f8  e=150  hit= 0  sol=False  id_t=41
+  [湿   ] vec=0x7c15  e=150  hit= 0  sol=False  id_t=48
+  [天   ] vec=0xccb4  e=150  hit= 0  sol=False  id_t=113
+
+--- tick  20 ---
+  total=33  active=33  solid=0  max_layer=16
+  [静   ] vec=0xf732  e= 44  hit= 1  sol=False  id_t=107
+  [山   ] vec=0x94f8  e= 44  hit= 1  sol=False  id_t=41
+  [湿   ] vec=0x7c15  e= 44  hit= 1  sol=False  id_t=48
+  [天   ] vec=0xccb4  e= 44  hit= 1  sol=False  id_t=113
+  [星   ] vec=0xbdcf  e= 44  hit= 1  sol=False  id_t=247
+
+--- tick  30 ---
+  total=32  active=32  solid=0  max_layer=16
+  [静   ] vec=0xf732  e=194  hit= 1  sol=False  id_t=107
+  [山   ] vec=0x94f8  e=194  hit= 1  sol=False  id_t=41
+  [湿   ] vec=0x7c15  e=194  hit= 1  sol=False  id_t=48
+  [天   ] vec=0xccb4  e=194  hit= 1  sol=False  id_t=113
+  [星   ] vec=0xbdcf  e=194  hit= 1  sol=False  id_t=247
+
+--- tick  50 ---
+  total=38  active=38  solid=0  max_layer=16
+  [静   ] vec=0xf732  e=238  hit= 2  sol=False  id_t=107
+  [湿   ] vec=0x7c15  e=238  hit= 2  sol=False  id_t=48
+  [星   ] vec=0xbdcf  e=238  hit= 2  sol=False  id_t=247
+  [静   ] vec=0x7ed2  e=238  hit= 2  sol=False  id_t=206
+  [星   ] vec=0xd7e7  e=238  hit= 2  sol=False  id_t=229
+
+--- tick  70 ---
+  total=51  active=29  solid=22  max_layer=16
+  [火   ] vec=0x4718  e=255  hit= 0  sol=False  id_t=100
+  [雷   ] vec=0xba6f  e=255  hit= 0  sol=False  id_t=102
+  [地   ] vec=0x4400  e=255  hit= 0  sol=False  id_t=105
+  [空   ] vec=0xe949  e=255  hit= 0  sol=False  id_t=104
+  [日   ] vec=0xd36b  e=255  hit= 0  sol=False  id_t=106
+
+--- tick 100 ---
+  total=47  active=23  solid=24  max_layer=16
+  [日   ] vec=0x8b27  e=208  hit= 2  sol=False  id_t=89
+  [光   ] vec=0xe09e  e=208  hit= 2  sol=False  id_t=93
+  [日   ] vec=0x1761  e=208  hit= 1  sol=False  id_t=98
+  [地   ] vec=0x4000  e=208  hit= 2  sol=False  id_t=87
+  [空   ] vec=0x2080  e=195  hit= 0  sol=False  id_t=131
+
+============================================================
+FINAL STATE
+============================================================
+total=47  active=23  solid=24  tick=100
+
+All gua (by id_t):
+  [SOLID] [地   ] ← -     vec=0x2f79  e=135  hc= 3  id_t= 8  id_l=16
+  [SOLID] [地   ] ← -     vec=0xbbe5  e=120  hc= 3  id_t=31  id_l=16
+  [SOLID] [地   ] ← -     vec=0x0400  e=164  hc= 3  id_t=38  id_l=16
+  [SOLID] [地   ] ← -     vec=0x26ca  e=210  hc= 3  id_t=41  id_l=16
+  [SOLID] [地   ] ← -     vec=0x717b  e= 12  hc= 3  id_t=42  id_l=16
+  [SOLID] [光   ] ← 地     vec=0x7c15  e= 12  hc= 3  id_t=48  id_l=16
+  [SOLID] [地   ] ← -     vec=0x4029  e= 60  hc= 3  id_t=48  id_l=16
+  [SOLID] [地   ] ← -     vec=0x7e46  e= 12  hc= 3  id_t=50  id_l=16
+  [SOLID] [地   ] ← -     vec=0x63ca  e= 12  hc= 3  id_t=67  id_l=16
+  [SOLID] [地   ] ← -     vec=0xb0a1  e= 12  hc= 3  id_t=69  id_l=16
+  [SOLID] [地   ] ← 光     vec=0x44de  e= 12  hc= 3  id_t=73  id_l=16
+  [SOLID] [地   ] ← -     vec=0xa45e  e= 12  hc= 3  id_t=77  id_l=16
+  [SOLID] [地   ] ← -     vec=0xde8e  e= 12  hc= 3  id_t=83  id_l=16
+  [SOLID] [地   ] ← -     vec=0x656b  e= 12  hc= 3  id_t=85  id_l=16
+  [live]  [地   ] ← -     vec=0x4000  e=208  hc= 2  id_t=87  id_l=16
+  [SOLID] [地   ] ← 静     vec=0xfa72  e= 12  hc= 3  id_t=89  id_l=16
+  [live]  [日   ] ← -     vec=0x8b27  e=208  hc= 2  id_t=89  id_l=16
+  [live]  [光   ] ← -     vec=0xe09e  e=208  hc= 2  id_t=93  id_l=16
+  [SOLID] [地   ] ← -     vec=0x76d0  e=135  hc= 3  id_t=95  id_l=16
+  [live]  [日   ] ← -     vec=0x1761  e=208  hc= 1  id_t=98  id_l=16
+  [live]  [雷   ] ← -     vec=0xba6f  e=193  hc= 2  id_t=102  id_l=16
+  [live]  [干   ] ← -     vec=0x8800  e=194  hc= 2  id_t=104  id_l=16
+  [SOLID] [地   ] ← 火     vec=0xf732  e= 12  hc= 3  id_t=107  id_l=16
+  [live]  [雷   ] ← -     vec=0xacc8  e=193  hc= 2  id_t=108  id_l=16
+  [live]  [日   ] ← -     vec=0x8764  e=193  hc= 2  id_t=110  id_l=16
+  [SOLID] [地   ] ← 干     vec=0x9969  e= 12  hc= 3  id_t=114  id_l=16
+  [live]  [火   ] ← -     vec=0xb552  e=194  hc= 1  id_t=114  id_l=16
+  [live]  [雷   ] ← -     vec=0x1d8c  e=194  hc= 1  id_t=116  id_l=16
+  [live]  [光   ] ← -     vec=0x14ff  e=194  hc= 1  id_t=118  id_l=16
+  [live]  [静   ] ← -     vec=0x6242  e=194  hc= 1  id_t=119  id_l=16
+  [SOLID] [地   ] ← 空     vec=0x69e9  e= 12  hc= 3  id_t=122  id_l=16
+  [live]  [静   ] ← -     vec=0x3a22  e=179  hc= 1  id_t=126  id_l=16
+  [SOLID] [地   ] ← 湿     vec=0x3d37  e= 12  hc= 3  id_t=127  id_l=16
+  [live]  [空   ] ← -     vec=0x2080  e=195  hc= 0  id_t=131  id_l=16
+  [live]  [雷   ] ← -     vec=0x948e  e=195  hc= 0  id_t=134  id_l=16
+  [live]  [光   ] ← -     vec=0x8006  e=195  hc= 0  id_t=135  id_l=16
+  [live]  [光   ] ← -     vec=0x440a  e=180  hc= 0  id_t=137  id_l=16
+  [live]  [湿   ] ← -     vec=0x6927  e=180  hc= 0  id_t=138  id_l=16
+  [live]  [雷   ] ← -     vec=0xa8de  e=180  hc= 0  id_t=142  id_l=16
+  [live]  [地   ] ← -     vec=0x76bd  e=180  hc= 0  id_t=144  id_l=16
+  [live]  [光   ] ← -     vec=0x8440  e=180  hc= 0  id_t=145  id_l=16
+  [live]  [静   ] ← -     vec=0x2a32  e=165  hc= 0  id_t=146  id_l=16
+  [live]  [光   ] ← -     vec=0x0042  e=180  hc= 0  id_t=153  id_l=16
+  [SOLID] [地   ] ← 动     vec=0x6437  e= 12  hc= 3  id_t=168  id_l=16
+  [SOLID] [地   ] ← 冷     vec=0xefb9  e= 12  hc= 3  id_t=183  id_l=16
+  [SOLID] [地   ] ← 日     vec=0xd7e7  e= 12  hc= 3  id_t=229  id_l=16
+  [SOLID] [地   ] ← 雷     vec=0xbdcf  e= 12  hc= 3  id_t=247  id_l=16
+
+State saved to tongzi_state.json

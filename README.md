@@ -166,6 +166,40 @@ Full evolution log: [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
+## Live Evidence — 20 Words, 100 Ticks
+
+A reproducible demo: 20 Chinese single-character words ingested, 100 ticks run, zero human intervention. Full log: `src/demo_100tick_output.txt`
+
+```
+20 seeds → 47 gua (135% growth through XOR+AND merging)
+24 solidified (51%, irreversible memory)
+23 active (49%, still colliding)
+```
+
+### Emergent Attractor: "地" (Earth)
+
+After 100 ticks, **9 of 20 original seeds had express() converge to "地"**:
+
+| Source word | Original meaning | express() after 100 ticks |
+|:--|:--|:--|
+| 火 | fire | 地 |
+| 干 | dry | 地 |
+| 空 | emptiness | 地 |
+| 湿 | wet | 地 |
+| 动 | move | 地 |
+| 冷 | cold | 地 |
+| 日 | sun | 地 |
+| 雷 | thunder | 地 |
+| 静 | still | 地 |
+
+**These 9 words had zero programmed relationship.** Fire, sun, thunder, cold, dry, wet, move, still, emptiness — no taxonomy, no ontology, no embedding. They converged because bit-patterns drifted through XOR/AND collisions and "地" became the nearest Hamming neighbor for all of them.
+
+Meanwhile, merge children (those born from XOR/AND during collision, with no source text) clustered around **"光" (light)**, **"日" (sun)**, and **"雷" (thunder)** — forming a two-layer structure: inward gravitational center ("地") + outward diffusion clusters.
+
+This is **not designed**. It is **emerged**.
+
+---
+
 ## Known Limitations
 
 | Limitation | Explanation |
