@@ -277,4 +277,12 @@ The goal: find a new underlying framework for AI that doesn't rely on matrices, 
 
 ---
 
+## Support
+
+If this project inspired you, consider supporting:
+
+- ☕ [爱发电 (Afdian)](https://afdian.com/a/tongzi-ai)
+
+---
+
 *"Not a better AI. A different one."*
