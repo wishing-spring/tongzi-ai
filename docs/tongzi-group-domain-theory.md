@@ -185,4 +185,40 @@ Extreme overload → density merge  (forceful)
 
 ---
 
-**Theory finalized. v1.2 merge formulas landed. 80 tests, 0 failures.**
+## 11. Verification — Attractor Mechanism (2026-05-21)
+
+Full report: [`experiments/exp001_attractor_verification/report.md`](../experiments/exp001_attractor_verification/report.md)
+
+### Question
+Is the "地" attractor (9 source words converging after 100 ticks) real emergence or a φ encoding artifact?
+
+### Three Tests
+
+**Test A — Static Centrality**: "地" ranks #7/20 in pure Hamming space centrality. Geometric centers "火"/"冷" are NOT attractors. Geometry alone fails to predict attractor location.
+
+**Test B — Reproducibility**: 3 independent φ trials → 100% reproducible (all 3 produce "地", 10-11 drifts).
+
+**Test C — Mother Body Control**: φ vs π vs 5 random 256-bit strings:
+
+| Mother Body | Drifts/20 | Attractor | Fertility |
+|:--|:--|:--|:--|
+| φ | 11 | 地 | ★★★★ |
+| π | 12 | 湿 | ★★★★ |
+| Random 1-4 | 11-17 | varies | ★★★★ |
+| Random 5 | 4 | 动 | ★ (barren) |
+
+### Three-Layer Conclusion
+
+| Layer | Finding |
+|:--|:--|
+| 1 | System spontaneously forms attractors — not φ-specific, not encoding bias |
+| 2 | Mother body determines *which* bit-pattern becomes the attractor |
+| 3 | Mother body also determines *fertility* — ecological differentiation confirmed (4/20 barren vs 17/20 fertile) |
+
+### Significance
+
+The attractor mechanism is **endogenous dynamics** (XOR/AND + solidification + energy cycling). The mother body acts as "soil" — determines both *where* flowers grow and *whether* anything grows at all. Random 5's 4/20 is the first experimental evidence of environmental selection in Tongzi.
+
+---
+
+**Theory finalized. v1.2 merge formulas landed. Attractor mechanism verified (Exp 001). 80 tests, 0 failures.**

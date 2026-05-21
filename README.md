@@ -200,6 +200,40 @@ This is **not designed**. It is **emerged**.
 
 ---
 
+## Verification — Attractor Mechanism (Exp 001)
+
+**Question**: Is the "地" attractor real emergence or a φ encoding artifact?
+
+Three controlled experiments (full report: [`experiments/exp001_attractor_verification/report.md`](experiments/exp001_attractor_verification/report.md)):
+
+### 1. Static Centrality Test
+"地" ranks **#7 of 20** in pure Hamming space centrality — "火" and "冷" are more central but are NOT attractors. Geometry alone does not predict the attractor.
+
+### 2. Reproducibility Test
+3 independent trials, 100 ticks each → **100% reproducible**: all 3 produced "地" as attractor (10-11 sources each).
+
+### 3. Mother Body Control Test
+Swapped φ for π and 5 random 256-bit strings:
+
+| Mother Body | Drifts/20 | Attractor | Fertility |
+|:--|:--|:--|:--|
+| φ | 11 | 地 | ★★★★ |
+| π | 12 | 湿 | ★★★★ |
+| Random 1-4 | 11-17 | varies | ★★★★ |
+| **Random 5** | **4** | **动** | **★ (barren)** |
+
+### Three-Layer Conclusion
+
+| Layer | Finding |
+|:--|:--|
+| 1. Does the system form attractors? | **Yes.** Every mother body produces them — not a φ artifact. |
+| 2. Why *this* attractor? | Mother body encoding determines *which* bit-pattern becomes the basin. |
+| 3. All mother bodies equally fertile? | **No.** Random 5 (4/20) vs Random 2 (17/20) — ecological differentiation exists. |
+
+**The attractor mechanism is real, endogenous dynamics. The mother body is "soil" — determines where and whether flowers grow.**
+
+---
+
 ## Known Limitations
 
 | Limitation | Explanation |

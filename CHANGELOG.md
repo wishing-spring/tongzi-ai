@@ -1,5 +1,16 @@
 # Tongzi · Evolution Log
 
+## Verification — Attractor Mechanism (2026-05-21)
+**Experiment Archive Founded — Exp 001**
+
+- **Question**: Is the "地" attractor real emergence or a φ encoding artifact? (triggered by GPT-4 review)
+- **Test A — Static Centrality**: "地" ranks #7/20 in pure Hamming space; "火"/"冷" are geometric centers but NOT attractors
+- **Test B — Reproducibility**: 3 independent φ trials → 100% reproducible (all 3: "地", 10-11 sources)
+- **Test C — Mother Body Control**: φ vs π vs 5 random strings. All produce attractors, but fertility varies (4/20 to 17/20)
+- **Three-layer conclusion**: (1) Attractors are endogenous dynamics, not φ artifact. (2) Mother body determines *which* attractor. (3) Mother body also determines *fertility* — Random 5 barren (4/20) vs Random 2 fertile (17/20) → ecological differentiation confirmed
+- **Archive**: `experiments/exp001_attractor_verification/report.md`
+- **Docs updated**: README + theory doc + MEMORY.md
+
 ## v1.2 (2026-05-20)
 **Gua Merging — Three Formulas**
 
