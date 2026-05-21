@@ -174,6 +174,14 @@ Full evolution log: [CHANGELOG.md](CHANGELOG.md)
 | express() is retrieval, not generation | `express()` finds the nearest neighbor in Hamming space and returns its original source text. It does not synthesize new content. The system is an **associative memory vessel** with endogenous dynamics, not a chatbot. |
 | Not a consumer product | No training, no inference, no benchmarks. This is a thought experiment exploring whether structure emerges from pure F₂ space + φ origin — nothing more. |
 
+### On 16-bit: Not a Cap, a Foundation Stage
+
+VEC_DIM=16 is the **current** dimension, not a permanent ceiling. The four axioms are dimension-independent — 32-bit, 64-bit, 128-bit all self-consistent. The merge criterion, frequency control, solidification, and density regulation all scale automatically.
+
+At 32 bits: **4.2 billion possible gua states** — collision risk drops exponentially. φ has 256 bits in reserve, more than enough to feed wider dimensions.
+
+16-bit is the seedbed: keep the space small, observe structural emergence, confirm the self-organizing mechanisms work, then unlock larger dimensions. Like an infant's neural capacity — limits are developmental, not architectural.
+
 ---
 
 ## Known Costs (Accepted)
