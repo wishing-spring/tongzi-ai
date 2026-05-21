@@ -1,8 +1,8 @@
 # Tongzi · F₂ Minimalist Group-Domain Architecture — A Thought Experiment
 
-**v1.0.2 | 4 files, ~25KB | Zero dependencies | Zero floats | Zero matrices | Zero gradients | Zero attention | Zero autoregression**
+**v1.2 | 3 source files, ~25KB | Zero dependencies | Zero floats | Zero matrices | Zero gradients | Zero attention | Zero autoregression**
 
-*Not a better AI. A different one. A thought experiment in pure GF(2) discrete space.*
+*Not a better AI. A different one. Built from scratch on pure GF(2) discrete space.*
 
 ---
 
@@ -10,7 +10,7 @@
 
 Tongzi is not an algorithm, not a model, not a processor.
 
-It is an **F₂ⁿ space**. Gua (卦) are points within it. Their associations, alignments, arrangements, and movements are properties of the space itself — not imposed by external rules.
+It is an **F₂ⁿ space**. Gua (卦 yuan) are points within it. Their associations, alignments, arrangements, and movements are properties of the space itself — not imposed by external rules.
 
 ```
 Not: input → encode → process → output (pipeline)
@@ -28,7 +28,7 @@ But:  F₂ⁿ space + gua population + natural interaction laws
 | 3 | d(a,b) = popcount(a⊕b) | Hamming distance |
 | 4 | d(Rₖ(a), Rₖ(b)) = d(a,b) | Rotation preserves distance |
 
-These four hold for VEC_DIM=16 and for VEC_DIM=65536 equally. No n appears anywhere in the axioms. From them derive: AND (a∧b), cyclic bit rotation Rₖ(v), and the Hamming ball Sᵣ(c).
+From these derive: AND (a∧b), cyclic bit rotation Rₖ(v), and the Hamming ball Sᵣ(c).
 
 ---
 
@@ -38,179 +38,131 @@ All gua originate from the binary fractional expansion of the golden ratio:
 
 ```
 φ = (1+√5)/2 ≈ 1.6180339...
-φ_bits = 1001111000110111... (256 bits, Decimal precision)
+φ_bits = 1001111000110111... (256 bits)
 ```
 
-Each gua is a slice of φ:
-
-```
-gua = φ_bits[pos : pos+length]
-```
-
-Every gua carries identity at birth:
-- **id_t** = pos — birth order in φ
-- **id_l** = length — layer code (number of yao)
-- Slide ±1 bit → direct predecessor/successor (lineage)
-
-`{id_t, id_l}` is the gua's ID card — globally unique, derived from φ position, no database needed.
+Each gua is a slice of φ. Every gua carries identity at birth: **id_t** (birth order) and **id_l** (layer depth).
 
 ---
 
 ## Eight Core Operations
 
-### 1. Collision — Full Information Expansion
-```
-collide(a, b) → (a⊕b, a∧b)
-```
-Two inputs, two outputs. Information is preserved — diff vector and consensus vector.
-
-### 2. Orbital Circulation
-```
-orbit(v, c, k) = Rₖ(v⊕c) ⊕ c
-```
-v rotates around center c on an equidistant spherical surface. d(v,c) invariant.
-
-### 3. Radial Stretch
-```
-stretch(v, c, λ) = v ⊕ λ·(v⊕c)
-λ ∈ {0,1}: 0 = stay, 1 = push to opposite side
-```
-
-### 4. Gray Inspection Ring
-```
-gray(v) = v ⊕ (v>>1)
-```
-All gua form a ring — adjacent nodes differ by exactly 1 bit. Natural traversal path.
-
-### 5–8. Distance, Clustering, Centrality, Hierarchical Index
-```
-radius(v, c)     = d(v, c)
-Ω(c, r)          = {x | d(x, c) ≤ r}      — Hamming ball
-centrality(v, c) = −d(v, c)
-layer(v)         = id_l(v),  order(v) = id_t(v)
-```
+| # | Operation | Formula | Purpose |
+|:--|:--|:--|:--|
+| 1 | Collision | (a⊕b, a∧b) | Full expansion — diff + consensus |
+| 2 | Orbit | Rₖ(v⊕c) ⊕ c | Rotate around center |
+| 3 | Stretch | v ⊕ λ·(v⊕c) | Push toward / away from center |
+| 4 | Gray ring | v ⊕ (v>>1) | Adjacent 1-bit traversal |
+| 5 | Distance | d(v,c) = popcount(v⊕c) | Exact Hamming distance |
+| 6 | Cluster | Ω(c,r) = {x | d(x,c) ≤ r} | Hamming ball |
+| 7 | Centrality | −d(v,c) | Proximity to center |
+| 8 | Layer index | id_l(v), id_t(v) | Identity from φ |
 
 ---
 
-## Endogenous Frequency Control
+## Gua Merging — v1.2 New
 
-No external clock. Frequency emerges from identity.
+When two gua collide, if their Hamming distance falls within the merge window, two child gua are spawned simultaneously:
 
-### Birth-Order Frequency
+### Merge Criterion
 ```
-f₁(x) = F₀ / (1 + id_t)     → rate (energy gained per tick)
+h = popcount(a ⊕ b)
+Merge if:  4 < h < 12   (VEC_DIM/4 ∼ 3·VEC_DIM/4)
 ```
-Early-born gua (small id_t) gain energy fast → high frequency.
+Too close → no new information. Too far → unrelated. Sweet spot → merge.
 
-### Layer-Differential Frequency
+### XOR Merge — Difference Chain
 ```
-f₂(x) = F₀ / (1 + id_l)     → rate
+C_xor = a ⊕ b
 ```
-Shallow-layer gua interact densely; deep-layer gua interact sparsely.
+Association, contrast, progression. Reversible: C_xor ⊕ a = b, C_xor ⊕ b = a.
 
-### Energy Accumulation Trigger
+### AND Merge — Consensus Deposit
 ```
-per tick:  energy += min(f₁, f₂)
-energy ≥ F₀ → discharge (participate), energy −= F₀
+C_and = a ∧ b
 ```
-F₀ = 256. Solidified gua never discharge.
+Generalization, rule extraction. Complements XOR's blind spot for shared information.
+
+### Merge Rules
+- Original gua (A, B) **never modified** — merge produces additional children only
+- Zero-value children (XOR or AND result = 0) are skipped
+- Merge children follow the same frequency control + density self-cleaning as all gua
+
+---
+
+## Endogenous Frequency Control (v1.2 Simplified)
+
+```
+rate = F₀ / (1 + id_l)     → energy gained per tick
+```
+
+Shallow gua (small id_l) → fast. Deep gua (large id_l) → slow.
+Same-layer gua share the same rhythm. Birth order no longer skews frequency.
+
+```
+per tick:  energy += rate
+energy ≥ F₀ (256) → discharge, energy = 0
+```
+
+Solidified gua never discharge.
 
 ---
 
 ## Bit-Field Solidification — Irreversible Memory
 
-Each gua naturally splits into two segments:
+Core bits (derived from id_l mask) are permanently locked — never participate in XOR, rotation, or stretch. Moving bits remain free.
 
-| Segment | Source | Property |
-|:--|:--|:--|
-| Core | φ base bits, length = id_l | Immutable root |
-| Moving | φ sliding extension | Evolvable |
-
-```
-Solid(x)   = G(x) ∧ M(x)
-M(x)       = mask(id_l, id_t)    — derived from identity, not stored
-```
-
-Core bits are permanently locked — they never participate in XOR, rotation, or stretch. Moving bits remain free.
-
-**Trigger (endogenous):** collision count exceeds threshold (lower for deeper layers → deeper gua solidify faster).
-
-**Weak unlock:** only direct lineage (pos±1) may micro-adjust a single locked bit — prevents complete rigidity.
+Triggered when collision count exceeds threshold. Deep gua solidify faster.
 
 ---
 
 ## Spatial Self-Awareness & Density Regulation
 
-### Local Density Perception
 ```
-S(x) = N / (d̄_H + 1)
-  N  = same-layer gua within Hamming radius r
-  d̄_H = average Hamming distance among neighbors
+S(x) = N / (d̄_H + 1)                      — local crowding
+λ_new = λ_base × (1 − μ · S/S_max)        — auto-disperse (negative feedback)
+μ = id_l / L_max                           — sensitivity (pure endogenous)
 ```
-S large = crowded. S small = sparse.
 
-### λ Auto-Adjustment (Negative Feedback)
-```
-λ_new = λ_base × (1 − μ(id_l) × S / S_max)
-```
-Crowding sensed → λ increases → gua spread outward → S drops (closed loop).
-
-### μ Sensitivity — Purely Endogenous
-```
-μ(id_l) = id_l / L_max
-  L_max = current maximum layer code (computed at runtime, not a parameter)
-```
-Shallow gua: low μ (tolerant of crowding). Deep gua: high μ (avoidance on slightest crowding).
-
-### Dual-Layer Volume Control
-```
-Mild congestion  → self-disperse (pre-regulation, gentle)
-Extreme overload → density-triggered merge (post-safety, forceful)
-```
+Crowded → gua spread out → density drops → closed loop. Overload → forceful merge.
 
 ---
 
 ## Minimal Inner Alchemy — Reverse Translation
 
 ```
-express(gua) = source_text of gua with minimum Hamming distance to moving_bits
+express(gua) = source_text of gua with minimum Hamming distance
 ```
 
-Not a fixed response. Not a template. The gua's current state maps back to the closest remembered source text.
+Not a fixed response. The gua's current bit-state maps back to the closest remembered word.
 
 ---
 
-## Current Code Status
+## Code Status
 
 | File | Lines | Content |
 |:--|:--|:--|
-| `src/tongzi_constants.py` | 28 | VEC_DIM=16, FULL_MASK, PHI_BITS(256) |
-| `src/tongzi_core.py` | 680 | Gua class + Space container: 8 ops + solidification + density + express |
-| `src/tongzi.py` | 108 | Interactive entry point |
-| `src/test_tongzi.py` | 250 | 81 tests, 13 sections, 0 failures |
+| `src/tongzi_constants.py` | 28 | VEC_DIM=16, FULL_MASK, φ_bits(256) |
+| `src/tongzi_core.py` | ~690 | Gua class + Space container: 8 ops + solidification + density + merge + express |
+| `src/tongzi.py` | ~197 | Interactive entry: ingest, /tick, /status, /list, /show, /chain |
+| `src/test_tongzi.py` | ~315 | 80 tests, 13 sections, 0 failures |
 
-**Iron Rules:**
-- ❌ No floats
-- ❌ No matrix multiplication
-- ❌ No gradient descent
-- ❌ No word embeddings
-- ❌ No attention
-- ❌ No autoregression
-- ❌ No neural networks of any form
+**Iron Rules:** No floats. No matrices. No gradients. No embeddings. No attention. No autoregression. No neural networks.
 
 ---
 
-## Removed (v0.5 → v1.0)
+## Evolution
 
-| Component | Reason |
-|:--|:--|
-| Loom (GF(2) 2D weaver) | Collide + orbit + stretch subsume weaving |
-| Balancer (yin-yang flags) | Thresholds bound to n; replaced by endogenous f₁+f₂ |
-| Responder (9 fixed replies) | Form without soul; output is now collision products |
-| 12 Anchor Frames | 12 is a fixed number |
-| ⌊√n⌋ / ⌊n/3⌋+4 | Contain n |
-| External cron watering | Replaced by density self-clean + endogenous frequency |
-| Projection mapping | Decoration, no substance |
+| Tag | Date | Milestone |
+|:--|:--|:--|
+| v0.5 | May 19 | Loom weaver + Balancer + Responder, open-sourced |
+| v1.0-arch | May 20 | Theory finalized: four axioms, φ mother, eight operations |
+| v1.0-code | May 20 | Code landing, removed old Loom pipeline (6 files) |
+| v1.0.2 | May 20 | Inner alchemy: express() reverse translation |
+| v1.1 | May 20 | /chain association chains |
+| v1.2 | May 20 | Gua merging: XOR+AND dual-chain + criterion + rate simplification |
+
+Full evolution log: [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
@@ -218,26 +170,25 @@ Not a fixed response. Not a template. The gua's current state maps back to the c
 
 | Cost | Note |
 |:--|:--|
-| No continuous transitions | F₂ is discrete, no gradients |
-| Output not directly readable | Collision results are bit strings |
-| Reversibility | **Resolved** — bit-field solidification = local irreversibility |
-| Evolution trapped in combinatorial pool | All operations are rearrangements in finite set |
-| Pseudo-3D | Hamming ball is not a true geometric body |
+| No continuous transitions | F₂ is discrete |
+| Output is bit strings | Not human-readable without express() |
+| Finite combinatorial pool | All operations are rearrangements |
 | No external clock | Silence when no input (by design) |
 
 ---
 
 ## License
 
-MIT
+MIT © 2026 [wishing-spring](https://github.com/wishing-spring)
 
 ---
 
-## Repositories
+## About the Author
 
-- **Gitee (primary):** https://gitee.com/wishing-spring/tongzi-ai
-- **GitHub (mirror):** https://github.com/wishing-spring/tongzi-ai
+I'm a pure hobbyist — not a programmer, never wrote code before this project. Everything here was built through conversation with my AI assistant **Copperbeard** (铜须, a blacksmith/dream-builder), with external consultation from **Doubao AI**.
+
+The goal: find a new underlying framework for AI that doesn't rely on matrices, gradients, attention, or neural networks. This is a thought experiment, not a product.
 
 ---
 
-**Theory finalized. Code v1.0.2 landed. Next: observe, do not add new features.**
+*"Not a better AI. A different one."*

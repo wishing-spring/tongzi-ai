@@ -1,80 +1,78 @@
-# 童子 · 进化日志
+# Tongzi · Evolution Log
 
 ## v1.2 (2026-05-20)
-**卦元合体 — 三条公式**
+**Gua Merging — Three Formulas**
 
-- **合体判据**: `4 < w_H(A⊕B) < 12` — 太近无增量，太远无关联
-- **XOR合体**: `C = A ⊕ B` — 差异关联链，双向可逆
-- **AND合体**: `C = A ∧ B` — 共识沉淀链，补XOR丢共识的短板
-- 零值过滤：XOR/AND 结果为 0 则跳过
-- 频控简化：`_rate` 去掉 `min(f₁,f₂)`，只用 `f₂ = F0/(1+id_l)`
-- 碰撞不变：A、B 原行为不变，合体为额外产子
-- 50 tick 实测：16 播种 → 55 卦，39 合体，关联自然浮现
-- 81 测试全绿
+- **Merge Criterion**: `4 < w_H(A⊕B) < 12` — skip too-close (no delta) and too-far (unrelated)
+- **XOR Merge**: `C = A ⊕ B` — difference association chain, bidirectionally reversible
+- **AND Merge**: `C = A ∧ B` — consensus deposit chain, fills XOR's blind spot
+- **Zero-value filter**: skip children where XOR or AND result is 0
+- **Frequency simplification**: `_rate` now uses only `f₂ = F0/(1+id_l)`, removed `min(f₁,f₂)`
+- **Collision unchanged**: A, B behavior preserved; merge spawns additional children only
+- **50-tick live test**: 16 seeds → 55 gua, 39 merges, associations emerge naturally
+- **80 tests, 0 failures**
 
 ## v1.1 (2026-05-20)
-**关联链链路 `/chain`**
+**Association Chains `/chain`**
 
-- 新增 `/chain <词> [N]` 命令：orbit 探索邻域 → express 译出 → 反馈
-- 实测：`寒 → 的 → 冷 → 热`，`火 → 热 → 冰`
-- 临时代价：绕开 tick 频控（新卦太慢），直接用 orbit
-- 已知缺陷：虚词拦路，长链需重新设计内丹
+- New `/chain <word> [N]` command: orbit explore neighborhood → express → feedback
+- Live test: `cold → winter → hot`, `fire → hot → ice`
+- Workaround: uses orbit instead of tick collision (frequency control too slow for new gua)
+- Known issue: function words obstruct long chains; inner alchemy redesign needed
 
 ## v1.0.2 (2026-05-20)
-**极简内丹 — 反向译出**
+**Minimal Inner Alchemy — Reverse Translation**
 
-- Gua.source：记录创建时的原始文本
-- Space.express(gua)：汉明距离找最近源文本
-- 交互输出从位串变为可读词
-- 81 测试全绿
+- `Gua.source`: records original text at creation
+- `Space.express(gua)`: finds nearest source by Hamming distance
+- Interactive output now human-readable words instead of raw bit strings
+- 81 tests, 0 failures
 
 ## v1.0.1 (2026-05-20)
-**生产级重构**
+**Production Refactor**
 
-- should_participate 拆为 accumulate_energy + try_discharge（查改分离）
-- save/load 补全 lambda_base 持久化
-- Gua.__repr__ 动态位宽
-- 完整类型标注 + docstring
-- 75 测试
+- Split `should_participate` into `_accumulate_energy` + `_try_discharge` (query/command separation)
+- Save/load now preserves `lambda_base`
+- `Gua.__repr__` with dynamic bit width
+- Full type annotations + docstrings
+- 75 tests
 
 ## v1.0-code (2026-05-20)
-**代码落地**
+**Code Landing**
 
-- 3 文件：constants + core + tongzi.py
-- 删除旧泵线 6 文件：Loom/Balancer/Responder/Seeds/Water/Boundary
-- 删除 cron 浇水任务
+- 3 files: `tongzi_constants.py` + `tongzi_core.py` + `tongzi.py`
+- Removed old pipeline 6 files: Loom/Balancer/Responder/Seeds/Water/Boundary
+- Removed cron watering task
 
 ## v1.0-arch (2026-05-20)
-**理论终版**
+**Theory Finalized**
 
-- 四条公理（不含 n）
-- φ 母体 + 身份证 {id_t, id_l}
-- 八条核心运算
-- 内生频控（能量累积制）
-- 位域固化（不可逆记忆）
-- 空间自感知 + 密度调节
-- 砍掉：Loom 编织/Balancer/Responder/12 锚定局/含 n 公式/外部定时
+- Four axioms (no `n`)
+- φ mother body + identity card {id_t, id_l}
+- Eight core operations
+- Endogenous frequency control (energy accumulation)
+- Bit-field solidification (irreversible memory)
+- Spatial self-awareness + density regulation
+- Removed: Loom/Balancer/Responder/12 Anchors/formulas containing `n`/external timers
 
 ## v0.5 (2026-05-19)
-**筑基出厂版**
+**Foundation Release**
 
-- Loom 编织：XOR+AND+S 盒+ref 四重混合，200/200 无坍缩
-- Balancer：六正六反阴阳圆满
-- Responder：9 种固定应答
-- 12 锚定局
-- φ-卦编码替换 ord-sum
-- ⌊√n⌋ 和 ⌊n/3⌋+4 公式落地
-- 双仓库开源（Gitee + GitHub）
+- Loom: XOR+AND+S-box+ref quadruple hybrid, 200/200 zero collapse
+- Balancer: six positive + six negative, yin-yang balanced
+- Responder: 9 fixed responses
+- 12 Anchor Frames
+- φ-gua encoding replacing ord-sum
+- Dual-repo open source (Gitee + GitHub)
 
 ## v0.4 (2026-05-18)
-**初代完整版**
+**First Complete Edition**
 
-- 内丹 · 九品丹修 · 十二锚定局
-- 赤子之心理论
-- 35KB 代码
-- 三方会审（豆包/千问/DeepSeek）
+- Inner alchemy · Nine-grade cultivation · Twelve anchor frames
+- 35KB code
+- Tri-party review (Doubao/Qwen/DeepSeek)
 
 ---
 
-**回溯旧版**: `git checkout <tag>`  
-**返回最新**: `git checkout master`
+**Rollback**: `git checkout <tag>`
+**Back to latest**: `git checkout master`
