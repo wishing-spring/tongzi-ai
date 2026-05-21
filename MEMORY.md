@@ -58,9 +58,9 @@ XOR交换 · XOR自消 · 汉明距离 · 旋转保距
 - 虚词（的/了/在）占路率高
 - 长链路需重新设计内丹——暂缓
 
-### GitHub 镜像
-- 代理 127.0.0.1:10808 经常离线
-- 离线时只推 Gitee，恢复后补推
+### 仓库
+- origin = GitHub 主仓，令牌内嵌直连
+- gitee = 随缘同步，不卡主流程
 
 ---
 
@@ -78,7 +78,7 @@ XOR交换 · XOR自消 · 汉明距离 · 旋转保距
 
 ## 工具设置
 
-- **Gitee**: wishing-spring / tongzi-ai / 直连
-- **GitHub**: wishing-spring / tongzi-ai / 需代理 127.0.0.1:10808
+- **GitHub 主仓**: https://github.com/wishing-spring/tongzi-ai（origin，主更）
+- **Gitee 镜像**: https://gitee.com/wishing-spring/tongzi-ai（gitee，随缘同步）
 - **项目路径**: `桌面/lingxiAI_v5.0/`
 - **工作区**: `C:\Users\45757\.copaw\workspaces\default\`
