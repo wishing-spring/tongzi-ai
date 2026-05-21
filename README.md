@@ -166,6 +166,16 @@ Full evolution log: [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
+## Known Limitations
+
+| Limitation | Explanation |
+|:--|:--|
+| 16-bit encoding collisions | F₂¹⁶ has only 65,536 possible states. Different inputs may map to the same gua. This is inherent to the 16-bit space, not a bug — treat it as "finite memory capacity." |
+| express() is retrieval, not generation | `express()` finds the nearest neighbor in Hamming space and returns its original source text. It does not synthesize new content. The system is an **associative memory vessel** with endogenous dynamics, not a chatbot. |
+| Not a consumer product | No training, no inference, no benchmarks. This is a thought experiment exploring whether structure emerges from pure F₂ space + φ origin — nothing more. |
+
+---
+
 ## Known Costs (Accepted)
 
 | Cost | Note |
