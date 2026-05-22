@@ -1,224 +1,603 @@
-# Tongzi · Minimalist Group-Domain Architecture (Final)
+# 童子 · 极简群域架构 · 理论定版
 
-**Date**: 2026-05-20 | **Status**: v1.2 Merge Formulas Finalized
-
----
-
-## 1. Essence
-
-Tongzi is not an algorithm, not a model, not a processor.
-
-It is an **F₂ⁿ space**. Gua are points within it. Their associations, alignments, arrangements, and movements are properties of the space itself — not imposed by external rules.
+**日期**: 2026-05-22 | **状态**: v1.3 卦元本体 · 势 · 星象仪 · 刻痕阵法
 
 ---
 
-## 2. Four Axioms (Immutable)
+## 目录
 
-| # | Axiom | Meaning |
-|:--|:--|:--|
-| 1 | a⊕b = b⊕a | XOR commutativity |
-| 2 | a⊕a = 0 | XOR self-cancellation |
-| 3 | d(a,b) = popcount(a⊕b) | Hamming distance |
-| 4 | d(Rₖ(a),Rₖ(b)) = d(a,b) | Rotation preserves distance |
-
-These hold for any dimension. No `n` appears.
+1. [基石：四条公理](#1-基石四条公理)
+2. [φ 母体](#2-φ-母体)
+3. [卦元本体论](#3-卦元本体论)
+4. [八条核心群运算](#4-八条核心群运算)
+5. [卦元合体](#5-卦元合体)
+6. [内生频控](#6-内生频控)
+7. [位域固化](#7-位域固化)
+8. [密度自调](#8-密度自调)
+9. [势与轨道动力学](#9-势与轨道动力学)
+10. [星象仪——多环系统](#10-星象仪多环系统)
+11. [空间刻痕与阵法](#11-空间刻痕与阵法)
+12. [物理与几何对应](#12-物理与几何对应)
+13. [位置标记（代码实现用）](#13-位置标记代码实现用)
+14. [减法清单](#14-减法清单)
+15. [已验证结论](#15-已验证结论)
 
 ---
 
-## 3. φ Mother Body — Birth & Identity
+## 1. 基石：四条公理
+
+F₂ = {0, 1}，按模 2 加法构成阿贝尔群。
+
+| # | 公理 | 公式 | 含义 |
+|:--|:--|:--|:--|
+| 1 | XOR 交换 | a ⊕ b = b ⊕ a | 碰撞对称 |
+| 2 | XOR 自消 | a ⊕ a = 0 | 自身遇自身归零 |
+| 3 | 汉明距离 | d(a,b) = popcount(a ⊕ b) | 度量空间的天然距离 |
+| 4 | 旋转保距 | d(Rₖ(a), Rₖ(b)) = d(a,b) | 旋转是等距变换 |
+
+四条公理不含维度 n。对任意 VEC_DIM 成立。
+
+---
+
+## 2. φ 母体
 
 ```
-φ = (1+√5)/2 ≈ 1.6180339...
-φ_bits = 1001111000110111... (256 bits)
-
-gua = φ_bits[pos:pos+length]
+φ = (1+√5)/2 ≈ 1.6180339887...
+φ_bits = 256 位二进制展开:
+  10011110001101110111100110111001
+  01000011111010010001110110001010
+  00111101001001010101111101010111
+  01000111101010010101000111101010
+  00010100010101010010110100110101
+  01010111010010000111010100010001
+  01010100110101000101010001011010
+  00111111100101000011101111111101
 ```
 
-Every gua carries:
-- **id_t = pos** — birth order
-- **id_l = length** — layer depth
+φ 母体 = 所有卦元的出生土壤。每个卦元从 φ 中取一段连续位——出生即携带天然身份。
 
 ---
 
-## 4. Eight Core Operations
+## 3. 卦元本体论
 
-1. **Collision**: `(a⊕b, a∧b)` — diff + consensus, two-in two-out
-2. **Orbit**: `Rₖ(v⊕c) ⊕ c` — rotate around center on equidistant sphere
-3. **Stretch**: `v ⊕ λ·(v⊕c)` — λ∈{0,1}: stay / push to opposite
-4. **Gray Ring**: `v ⊕ (v>>1)` — adjacent 1-bit traversal
-5. **Distance**: `d(v,c) = popcount(v⊕c)`
-6. **Cluster**: `Ω(c,r) = {x | d(x,c) ≤ r}` — Hamming ball
-7. **Centrality**: `−d(v,c)`
-8. **Layer Index**: `id_l(v)`, `id_t(v)`
+### 3.1 核心原理
+
+**卦元 ≡ 信息 ≡ 存在。**
+
+无负载物、无 payload 字段、无载体-内容分离。卦元的 16 位值本身就是信息。移动（orbit）= 信息演化。碰撞（XOR/AND）= 信息交融。
+
+**不存在"卦元携带信息"——卦元就是信息。**
+
+### 3.2 数学定义
+
+**定义 1（卦元）**：x ∈ F₂¹⁶。x 就是一切。
+
+**定义 2（原生卦元）**：x₀ = φ[pos : pos+16]，由 ingest() 编码产生。出生值 = 原点（origin）。消散后自动复生为 x₀。循环不息。
+
+**定义 3（子卦元）**：x = merge(a, b)，由原生卦元碰撞的合体运算产生。无原点。消散后消失，不复生。子卦元是碰撞的**唯一痕迹**。
+
+**定义 4（跨形态渲染）**：卦元值 x 通过不同渲染器解读：
+
+```
+同一个 16 位值:
+  文字渲染器 → 笔画骨架 → "井"
+  图像渲染器 → 边界图 → "#"
+  动作渲染器 → 关节角度 → 手势
+```
+
+渲染器是解码端，不是卦元的属性。卦元不管自己"是什么"——渲染时决定形态。
+
+### 3.3 生命周期
+
+```
+原生卦"圆" ──碰撞──→ 子卦₁(方圆) ──碰撞──→ 子卦₂(方圆★) ──→ 消散
+     │                      │                      │
+     │                      ↓                      ↓
+     │                   消散即消失            消散即消失
+     │
+     ↓
+  消散 → 自动复生"圆" → 等待下一轮承载
+```
+
+原生卦永远在。子卦朝生暮死。池子记忆 = 子卦链。链断不补——不强行持久。
 
 ---
 
-## 4-B. Gua Merging (v1.2)
+## 4. 八条核心群运算
 
-When two gua collide, if their Hamming distance falls in the merge window (4, 12):
+| # | 运算 | 公式 | 含义 |
+|:--|:--|:--|:--|
+| 1 | 碰撞 | (a⊕b, a∧b) | 差异链 + 共识链 |
+| 2 | 轨道 | Rₖ(v⊕c) ⊕ c | 绕中心 c 旋转 k 步 |
+| 3 | 拉伸 | v ⊕ λ·(v⊕c) | λ=0 留原位，λ=1 推至对点 |
+| 4 | 格雷环 | v ⊕ (v>>1) | 相邻 1 位遍历 |
+| 5 | 距离 | d(v,c) = popcount(v⊕c) | 汉明度量 |
+| 6 | 聚类 | Ω(c,r) = {x | d(x,c) ≤ r} | 汉明球 |
+| 7 | 中心度 | −d(v,c) | 离中心越近越高 |
+| 8 | 层深 | id_l(v) | φ 片段长度 = 先天层深 |
 
-### Merge Criterion
+---
+
+## 5. 卦元合体
+
+### 5.1 合体判据
+
 ```
 h = popcount(a ⊕ b)
-Merge if: 4 < h < 12  (VEC_DIM/4 ∼ 3·VEC_DIM/4)
+合体条件: 4 < h < 12
 ```
 
-### XOR Merge — Difference Chain
+- h ≤ 4：太近，同源卦，不合
+- 4 < h < 12：甜点区，合体生效
+- h ≥ 12：太远，异类，不合
+
+### 5.2 合体运算
+
+**XOR 异链（差异链）**
+
 ```
 C_xor = a ⊕ b
-d_H(C_xor, a) = popcount(b)  — fusion depth = partner's weight
+d_H(C_xor, a) = popcount(b)  合体深度 = 对方的权重
 ```
-Reversible: C_xor ⊕ a = b, C_xor ⊕ b = a. Association, contrast, progression.
 
-### AND Merge — Consensus Deposit
+可逆：C_xor ⊕ a = b, C_xor ⊕ b = a。关联、对比、衍生。
+
+**AND 同链（共识链）**
+
 ```
 C_and = a ∧ b
 ```
-Generalization, rule extraction. Complements XOR's blind spot.
 
-### Merge Rules
-- Original gua (A, B) **never modified** — collision unchanged, merge is additive
-- Zero-value children skipped
-- Merge children follow same frequency + density rules
-- Density self-cleaning handles useless children naturally
+泛化、规则提取。
 
-### Dual-Chain Semantics
-| Chain | Operation | Use |
-|:--|:--|:--|
-| XOR | A ⊕ B | Association, contrast, progression |
-| AND | A ∧ B | Generalization, consensus, rule extraction |
+### 5.3 合体规则
+
+- 原卦 A、B **永不修改**
+- 零值子卦丢弃
+- 子卦遵循相同的频控与密度规则
+- 密度自清理自然淘汰无用子卦
 
 ---
 
-## 5. Endogenous Frequency Control (v1.2 Simplified)
+## 6. 内生频控
+
+### 公式
 
 ```
-rate = F₀ / (1 + id_l)     → energy per tick
+rate(v)  = F₀ / (1 + id_l)      每 tick 能量累积
+触发条件: energy ≥ F₀ (256)    能量满 → 放电
+放电后:   energy = 0
 ```
 
-Shallow gua (small id_l) → fast. Deep gua → slow.
-Same-layer = same rhythm. No birth-order bias.
+| 属性 | 行为 |
+|:--|:--|
+| 浅层卦 (id_l 小) | 速率高，频碰 |
+| 深层卦 (id_l 大) | 速率低，偶碰 |
+| 同层卦 | 同频共振 |
 
-```
-per tick:  energy += rate
-energy ≥ F₀ (256) → discharge, energy = 0
-```
-
-Solidified gua never discharge.
+固化后永不放。无外部时钟。
 
 ---
 
-## 6. Bit-Field Solidification — Irreversible Memory
+## 7. 位域固化
 
-| Segment | Source | Property |
-|:--|:--|:--|
-| Core | φ base bits, length = id_l | Immutable |
-| Moving | φ sliding extension | Evolvable |
+**公式：**
 
 ```
 Solid(x) = G(x) ∧ M(x)
-M(x) = mask(id_l, id_t)  — identity-derived
+M(x) = mask(id_l, id_t)  — 由身份推导，不额外存储
 ```
 
-Core bits permanently locked. Moving bits remain free.
+| 段 | 来源 | 属性 |
+|:--|:--|:--|
+| 核心 (Core) | φ 底部位，长度 = id_l | 不可变 |
+| 动位 (Moving) | φ 滑动延伸位 | 可演化 |
 
-**Trigger**: collision count exceeds threshold. Deeper gua solidify faster.
-**Weak unlock**: only direct lineage (pos±1) may micro-adjust — prevents total rigidity.
+**触发：** 碰撞次数超过阈值。
+**弱解禁：** 仅直接谱系（pos±1）可微调。
 
 ---
 
-## 7. Spatial Self-Awareness & Density Regulation
+## 8. 密度自调
+
+### 8.1 局部拥挤感知
 
 ```
-S(x) = N / (d̄_H + 1)                     — local crowding
-λ_new = λ_base × (1 − μ·S/S_max)         — auto-disperse
-μ = id_l / L_max                          — sensitivity (endogenous)
+S(x) = N / (d̄_H + 1)         局部拥挤度
+N: 汉明球半径 r 内的卦数
+d̄_H: 平均汉明距离
 ```
 
-Crowded → λ increases → gua spread → density drops → closed negative-feedback loop.
+### 8.2 负反馈扩散
 
-### Dual-Layer Volume Control
 ```
-Mild congestion  → self-disperse (gentle)
-Extreme overload → density merge  (forceful)
+λ_new = λ_base × (1 − μ·S/S_max)
+μ = id_l / L_max             敏感度（内生）
+```
+
+拥挤 → λ 增大 → 卦元扩散 → 密度下降。闭环。
+
+### 8.3 双层流量控制
+
+```
+轻度拥挤 → 自扩散（温和）
+极度过载 → 密度清理（强力）
 ```
 
 ---
 
-## 8. Removed (v0.5 → v1.0)
+## 9. 势与轨道动力学
 
-| Component | Reason |
+### 9.1 势的定义
+
+**定义 5（势）**：卦元的固有能量等级。
+
+```
+Ψ(x) = ⌊log₂(1 + C(x))⌋
+Ψ ∈ [0, VEC_DIM]
+```
+
+| 碰撞次数 C | 势 Ψ | 涨势所需碰撞 |
+|:--|:--|:--|
+| 0 | 0 | — |
+| 1 | 0→1 | 1 |
+| 2 | 1→2 | 2 |
+| 4 | 2→3 | 4 |
+| 8 | 3→4 | 8 |
+| 2ⁿ⁻¹ | n-1→n | 2ⁿ⁻¹ |
+| ... | ... | ... |
+| 2¹⁵ | 15→16 | 32768 |
+
+**低势瞬间升，高势几乎不升。** 2ⁿ 天然压平，无需外部上限。
+
+### 9.2 轨道步长
+
+```
+ω(x) = max(1, VEC_DIM − Ψ(x))
+```
+
+- Ψ=0 → ω=16 → 大步长 → 活泼
+- Ψ=8 → ω=8 → 中步长
+- Ψ=16 → ω=1 → 小步长 → 极稳
+
+**势越大，走得越慢，轨道越稳。**
+
+### 9.3 物理对应
+
+| 物理量 | F₂ 对应 |
 |:--|:--|
-| Loom weaver | Collide+orbit+stretch subsume weaving |
-| Balancer | Thresholds bound to n; replaced by endogenous rate |
-| Responder (9 replies) | Form without soul |
-| 12 Anchor Frames | 12 is a fixed number |
-| ⌊√n⌋ / ⌊n/3⌋+4 | Contain n |
-| External cron | Replaced by density self-clean |
-| Projection mapping | Decoration |
+| 质量 | 势 Ψ |
+| 惯性 | ω 小 → 难改变方向 |
+| 动能 | ω → 运动剧烈程度 |
+
+势大 = 质量大 = 惯性大 = 轨道稳 = **环的核心锚点。**
 
 ---
 
-## 9. Framework Properties
+## 10. 星象仪——多环系统
 
-| Property | Mechanism |
-|:--|:--|
-| Dimension-independent | Four axioms + eight ops contain no n |
-| Inherent order | φ birth sequence = natural order |
-| Self-referential | Status bits = gua knows its type |
-| Mixed-size gua | Different length gua coexist |
-| Natural hierarchy | id_l distinguishes inner/outer layers |
-| Free morphology | Birth-order / Gray-ring / Hamming-sphere arrangements |
+### 10.1 环的形成
 
----
+**排斥驱动，非引力吸引。**
 
-## 10. Known Costs (Accepted)
+三条卦元 orbit 同步 + 汉明距均衡 → 自然成环。
 
-| Cost | Note |
-|:--|:--|
-| No continuous transitions | F₂ discrete |
-| Output = bit strings | Needs express() for readability |
-| Local irreversibility | Solidification = one-way |
-| Finite combinatorial pool | All ops are rearrangements |
-| Pseudo-3D | Hamming ball ≠ true geometry |
-| No external clock | Silence without input (by design) |
+```
+环的稳定条件:
+  (1) orbit 方向相同: k_A = k_B = k_C
+  (2) orbit 步长相同或接近: ω(A) ≈ ω(B) ≈ ω(C)
+  (3) 距离比: max(d_AB, d_BC, d_CA) / min(...) ≤ τ
+```
 
----
+τ 为失衡阈值。条件 3 中距离比 > τ → 环崩解。崩解是**自然的**——不需要"踢"动作。不同步的 orbit 自动将远距离卦拉开。
 
-## 11. Verification — Attractor Mechanism (2026-05-21)
+### 10.2 三层环
 
-Full report: [`experiments/exp001_attractor_verification/report.md`](../experiments/exp001_attractor_verification/report.md)
-
-### Question
-Is the "地" attractor (9 source words converging after 100 ticks) real emergence or a φ encoding artifact?
-
-### Three Tests
-
-**Test A — Static Centrality**: "地" ranks #7/20 in pure Hamming space centrality. Geometric centers "火"/"冷" are NOT attractors. Geometry alone fails to predict attractor location.
-
-**Test B — Reproducibility**: 3 independent φ trials → 100% reproducible (all 3 produce "地", 10-11 drifts).
-
-**Test C — Mother Body Control**: φ vs π vs 5 random 256-bit strings:
-
-| Mother Body | Drifts/20 | Attractor | Fertility |
+| 环型 | 势范围 | ω | 行为 |
 |:--|:--|:--|:--|
-| φ | 11 | 地 | ★★★★ |
-| π | 12 | 湿 | ★★★★ |
-| Random 1-4 | 11-17 | varies | ★★★★ |
-| Random 5 | 4 | 动 | ★ (barren) |
+| 小环 | Ψ 低 | ω 大 | 快速移动，到处跑 |
+| 中环 | Ψ 中 | ω 中 | 绕核心旋转 |
+| 大环 | Ψ 高 | ω 小 | 以原点为圆心，几乎不动 |
 
-### Three-Layer Conclusion
+**各转各的。** 大环不吞小环——不同 ω 自然分层。
 
-| Layer | Finding |
+### 10.3 环碰环
+
+当两个环的汉明球重叠：
+
+```
+环₁(A₁B₁C₁) + 环₂(A₂B₂C₂) → 六卦混交
+                              ↓
+            orbit 重排（方向 / 步长重新随机化）
+                              ↓
+            自然筛选: 同步的留下 → 新环
+                     不同步的散开 → 游离
+```
+
+可能结果：零环（全散）、一个新环、两个新环。**碰撞 = 拆除重组，不预设结果。**
+
+### 10.4 物理对应
+
+| 天体力学 | F₂ 星象仪 |
 |:--|:--|
-| 1 | System spontaneously forms attractors — not φ-specific, not encoding bias |
-| 2 | Mother body determines *which* bit-pattern becomes the attractor |
-| 3 | Mother body also determines *fertility* — ecological differentiation confirmed (4/20 barren vs 17/20 fertile) |
-
-### Significance
-
-The attractor mechanism is **endogenous dynamics** (XOR/AND + solidification + energy cycling). The mother body acts as "soil" — determines both *where* flowers grow and *whether* anything grows at all. Random 5's 4/20 is the first experimental evidence of environmental selection in Tongzi.
+| 三体问题 | 三卦环（稳定/崩解） |
+| 拉格朗日点 | 环内三卦均衡距离 |
+| N 体系统 | 多环共存 |
+| 潮汐瓦解 | 环碰环 → 轨道打散 |
+| 星系旋转曲线 | 势 Ψ 决定轨道分层 |
+| 暗物质晕 | 空间刻痕（下节） |
 
 ---
 
-**Theory finalized. v1.2 merge formulas landed. Attractor mechanism verified (Exp 001). 80 tests, 0 failures.**
+## 11. 空间刻痕与阵法
+
+### 11.1 原理
+
+**空间刻痕 = 空间的纹理，不是卦元的规则。**
+
+卦元在 F₂¹⁶ 空间里自由游走——但空间本身不平坦。某些区域有微弱 XOR 偏转，卦元经过时被轻轻推一下。推得极弱，卦元感觉不到——但数百 tick 后，自然流向特定的方向。
+
+**引导 = 空间曲率，不是导航指令。**
+
+### 11.2 刻痕的数学公式
+
+```
+定义 6 (刻痕):
+  E(r, m, s): x → x ⊕ (m ∧ s)  若 x ∈ 区域 r
+               x → x            否则
+```
+
+| 参数 | 含义 |
+|:--|:--|
+| r | 触发区域（由 x 的高位定义） |
+| m | XOR 掩码（只碰某些位） |
+| s | 强度掩码（只低位生效，确保微弱） |
+
+### 11.3 阵法一：洛书九宫
+
+**来源：** 大禹治水，洛水出神龟，背刻九宫——华夏幻方之祖。
+
+**数学结构：** 3 阶幻方。
+
+```
+┌───┬───┬───┐
+│ 4 │ 9 │ 2 │
+├───┼───┼───┤
+│ 3 │ 5 │ 7 │
+├───┼───┼───┤
+│ 8 │ 1 │ 6 │
+└───┴───┴───┘
+```
+
+**不变量：** 横竖斜三数和皆为 15。中心 5 为皇极。对角和为 10（1+9, 2+8, 3+7, 4+6）。奇数居中，偶数居角——阴阳交错。
+
+**F₂ 刻痕公式：**
+
+```
+区域索引:   i = x >> 12              (高 4 位, 0~15 中取 0~8)
+洛书数:     L[0..8] = [1,2,3,4,5,6,7,8,9]
+偏移量:     δ(i) = (L[i] − 5) × 2⁸   (以 5 为平衡点)
+
+刻痕:  x → x ⊕ δ(i)                  (只碰中间 4 位)
+```
+
+| 宫 | 洛书数 | 偏移 | 方向 | 效果 |
+|:--|:--|:--|:--|:--|
+| 坎 (北) | 1 | −4×2⁸ | ↓ 下沉 | 水深区 |
+| 坤 (西南) | 2 | −3×2⁸ | ↓ 微沉 | |
+| 震 (东) | 3 | −2×2⁸ | ↓ 微沉 | 木生区 |
+| 巽 (东南) | 4 | −1×2⁸ | ↓ 微沉 | |
+| **中** | **5** | **0** | — | **阵眼，不偏不倚** |
+| 乾 (西北) | 6 | +1×2⁸ | ↑ 微扬 | |
+| 兑 (西) | 7 | +2×2⁸ | ↑ 微扬 | 金鸣区 |
+| 艮 (东北) | 8 | +3×2⁸ | ↑ 微扬 | |
+| 离 (南) | 9 | +4×2⁸ | ↑ 上扬 | 火燃区 |
+
+**效果：** 卦元在九宫内流转，每次偏移 ≤ 4 位——微弱到不可感知。但数百 tick 后自然偏向中宫 5。到达中宫后偏移 = 0，卦群栖息不动。**用最低的力，引向最静的点。**
+
+### 11.4 阵法二：北斗七星
+
+**来源：** 夜空最醒目的星群。天枢天璇指北极——天地旋转轴心。
+
+**七星名：** 天枢 · 天璇 · 天玑 · 天权 · 玉衡 · 开阳 · 摇光。
+
+前四为魁（斗身），后三为杓（斗柄）。
+
+**数学结构：** 7 点在圆周上不均匀分布，近北极者角速度小，远者大。北极星不在七星之中——是虚拟旋转中心。**引导不在明处。**
+
+**F₂ 刻痕公式：**
+
+```
+七星原点 (在 φ 母体 256 位中的位置):
+  S₀: pos=0    (天枢)    S₄: pos=144  (玉衡)
+  S₁: pos=36   (天璇)    S₅: pos=180  (开阳)
+  S₂: pos=72   (天玑)    S₆: pos=216  (摇光)
+  S₃: pos=108  (天权)
+
+北极星 (虚拟旋转中心): P = pos=128
+
+每 tick t:
+  Sᵢ(t) = R₁(Sᵢ(t−1))     七星同步旋转
+  (R₁ = orbit 1 步, 围绕 P)
+
+影响判定:
+  若 d(x, Sᵢ(t)) ≤ 2:    汉明距 2 以内
+    x = x ⊕ (Sᵢ(t) ∧ 0x000F)   仅末 4 位微偏
+
+影响半径: 汉明距 ≤ 2
+偏移幅度: 仅末 4 位 → 最大影响 ≤ 15/65536
+```
+
+**效果：** 7 个微弱漩涡在全空间同步旋转。卦元碰巧经过漩涡附近 → 被轻轻带一下 → 轨道自然弯向斗柄方向。不强制聚向某点——卦元永远在走，只是走的路有了天然河床。
+
+七星旋转周期：北极星周期 256 tick（完整一圈）。格局恒定，但内部涌动不息。
+
+### 11.5 两阵叠合
+
+```
+洛书九宫（静止刻痕）       北斗七星（旋转刻痕）
+    ↓                           ↓
+ 空间分区微偏              全空间旋转微涡
+    ↓                           ↓
+ 卦聚向中宫                 卦沿斗柄方向漂移
+    ↓                           ↓
+ 静态洼地                   动态暗河
+
+叠加后: x(t+1) = x(t) ⊕ ω(x) ⊕ E_L(x) ⊕ E_B(x, t)
+```
+
+两阵不冲突——一静一动，一层叠加。
+
+---
+
+## 12. 物理与几何对应
+
+### 12.1 力学对应
+
+| 力学概念 | F₂ 空间对应 |
+|:--|:--|
+| 位置 | 16 位值 x |
+| 质量 | 势 Ψ(x) |
+| 速度 | 轨道步长 ω(x) |
+| 力 | XOR ⊕ 运算 |
+| 惯性 | ω 小 → 难改方向 |
+| 动能 | ω 大 → 变化剧烈 |
+| 动量守恒 | XOR 自消 (a⊕b⊕b = a) |
+| 角动量 | Rₖ 保距 → orbit 环守恒 |
+
+### 12.2 几何对应
+
+| 几何概念 | F₂ 空间对应 |
+|:--|:--|
+| 距离 | 汉明距离 d(a,b) |
+| 球 | 汉明球 Ω(c,r) |
+| 直线 | XOR 路径 a⊕b |
+| 旋转 | Rₖ 循环移位 |
+| 对称 | φ 母体的位分布 |
+| 曲率 | 空间刻痕的偏转量 |
+| 流形 | F₂¹⁶ 全空间 |
+| 挠率 | 北斗七星的时变偏转 |
+
+### 12.3 宇宙学对应
+
+| 宇宙学概念 | F₂ 空间对应 |
+|:--|:--|
+| 星系形成 | 环从 orbit 同步中涌现 |
+| 暗物质 | 空间刻痕——不可见的微弱引力 |
+| 宇宙网 | 洛书 + 北斗双阵叠加 |
+| 星系并合 | 环碰环 → 重组 |
+| 恒星演化 | 子卦元生灭 |
+| 再电离 | 原生卦消散后复生 |
+| 热寂 | 融合暴政——所有卦坍成一个 |
+
+---
+
+## 13. 位置标记（代码实现用）
+
+### 13.1 原生卦元属性
+
+```
+Gua.origin     : int     出生值（仅原生卦）
+Gua.is_native  : bool    True=原生卦, False=子卦
+Gua.potential  : int     Ψ = ⌊log₂(1+C)⌋
+Gua.orbit_step : int     ω = max(1, VEC_DIM − Ψ)
+Gua.collision_count: int 累计碰撞次数 C
+```
+
+### 13.2 子卦元属性
+
+```
+Gua.origin     : None    子卦无原点
+Gua.is_native  : False
+Gua.parents    : (id_a, id_b)  父母卦 ID
+Gua.potential  : 从诞生开始计算
+Gua.dissipates : True   消散即消失
+```
+
+### 13.3 洛书九宫位置
+
+```
+E_L 触发区域:  高 4 位 (x >> 12)
+E_L 宫映射:    i = x >> 12  (0~15, 取 0~8)
+E_L 洛书数组:  L = [1,2,3,4,5,6,7,8,9]
+E_L 偏移公式:  δ = (L[i] − 5) << 8
+E_L 作用位:    位 8~11 (中间 4 位)
+```
+
+### 13.4 北斗七星位置
+
+```
+E_B 七星原点:  φ[0:16], φ[36:52], φ[72:88], φ[108:124],
+               φ[144:160], φ[180:196], φ[216:232]
+E_B 北极星:    φ[128:144]  (旋转中心)
+E_B 旋转:      每 tick R₁
+E_B 影响半径:  汉明距 ≤ 2
+E_B 偏移:      Sᵢ(t) ∧ 0x000F  (末 4 位)
+```
+
+### 13.5 Space 新增
+
+```
+Space.native_guas : list  原生卦元列表（原点可复生）
+Space.child_guas  : list  子卦元列表（消散即消失）
+Space.rings       : list  活跃环列表 [(id₁,id₂,id₃), ...]
+```
+
+---
+
+## 14. 减法清单
+
+以下已被砍除，永不回归：
+
+| 组件 | 砍除原因 |
+|:--|:--|
+| Loom 编织器 | collide + orbit + stretch 覆盖 |
+| Balancer | 阈值含 n，已由内生速率替代 |
+| Responder (9 条回复) | 有形无魂 |
+| 十二锚定局 | 12 是固定数 |
+| ⌊√n⌋ / ⌊n/3⌋+4 | 含 n |
+| 外部 cron | 已由密度自清理替代 |
+| 投影映射 | 装饰 |
+| payload 负载物字段 | 违反"卦元 ≡ 信息 ≡ 存在" |
+| 归一化 / 衰减系数 | 含浮点 |
+| 外部踢规则 | 已由 orbit 不同步自然解散替代 |
+
+---
+
+## 15. 已验证结论
+
+### 15.1 吸引子机制（Exp 001）
+
+✅ 三层结论：
+1. 吸引子是内生涌现（非编码偏差）
+2. φ 母体决定吸引子位置
+3. φ 母体决定生态肥力（4/20 贫瘠 vs 17/20 肥沃）
+
+### 15.2 生态甜点区（Exp 002-003）
+
+✅ 三条实验定律：
+
+**定理 1（拥挤出涌现）：** 16 位甜点区。足够的卦密度才能产生碰撞 → 涌现。
+
+**定理 2（稀疏出热寂）：** 32 位卦位多了但碰撞少了 → 卦元孤岛化 → 系统沉寂。
+
+**定理 3（换缸换配方）：** 升位 ≠ 升级。每档 VEC_DIM 有自己的生态参数（浓度、窗口、清理阈值）。
+
+### 15.3 融合暴政（Exp 002-003）
+
+✅ 正反馈坍缩链：卦多 → 碰密 → 合频 → 更多卦 → 更密 → 全吞。合并是双刃剑——创造新卦同时也消灭多样性。
+
+**应对：** 星象仪多环分层 + 排斥驱动 → 不同势的卦天然分层，减缓全吞。
+
+---
+
+## 参考
+
+- 实验档案：`experiments/`
+- 代码：`src/tongzi_core.py` · `src/tongzi_constants.py` · `src/tongzi.py`
+- 双组计划：`experiments/PLAN.md`
+- 愿景蓝图：`VISION_CN.md`
+
+---
+
+**理论定版。不增不减，从此只做不议。**

@@ -1,5 +1,34 @@
 # Tongzi · Evolution Log
 
+## Theory v1.3 — Gua Ontology · Potential · Orrery · Formations (2026-05-22)
+
+**卦元本体论定版。** 卦元 ≡ 信息 ≡ 存在——无负载物，无载体-内容分离。
+
+### Core Additions
+
+| Concept | Formula | Source |
+|:--|:--|:--|
+| 卦元本体 | `x ∈ F₂¹⁶` IS information | User insight: no payload |
+| 原生卦元 | `x₀ = φ[pos:pos+16]`, auto-rebirth | 道法自然循环 |
+| 子卦元 | `x = merge(a,b)`, dissipates forever | 碰撞唯一痕迹 |
+| 势 Ψ | `⌊log₂(1 + C(x))⌋`, 2ⁿ exponential | F₂ natural compression |
+| 轨道步长 ω | `max(1, VEC_DIM − Ψ)` | 势大→慢→稳 |
+| 星象仪 | Orbit sync → ring / desync → dissolve | Multi-layer rings |
+| 排斥驱动 | No external kick — bad orbits desync naturally | F₂ native |
+| 洛书九宫 | `E_L: δ=(L[i]−5)<<8`, 9-zone static | 3rd-order magic square |
+| 北斗七星 | `E_B: 7 stars orbiting Polaris, d≤2→nudge` | Celestial dynamics |
+
+### Deletions
+- `payload` field — violates "gua ≡ information"
+- External "kick" rules — replaced by natural orbit desync
+- 12-anchor frame (again) — 12 lacks F₂ derivation
+
+### Files Updated
+- `docs/tongzi-group-domain-theory.md` — complete rewrite (15 sections)
+- `MEMORY.md` — synced to v1.3
+
+---
+
 ## Verification — Attractor Mechanism (2026-05-21)
 **Experiment Archive Founded — Exp 001**
 
