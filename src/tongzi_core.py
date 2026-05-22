@@ -23,6 +23,7 @@ from __future__ import annotations
 from typing import List, Tuple, Optional, Dict
 import json
 import os
+import random
 
 from tongzi_constants import VEC_DIM, FULL_MASK, PHI_BITS, PHI_LEN
 
@@ -102,6 +103,10 @@ class Gua:
         'energy',     # int : 能量累积值 (频控用)
         'lambda_base',# int : 伸缩基数 (λ)
         'source',     # str : 创建时的原始文本 (内丹反向译出用)
+        'is_native',  # bool: 原生卦 (有原点可复生)
+        'origin',     # int : 出生值 (仅原生卦)
+        'gap_timer',  # int : 复生倒计时 (仅原生卦消散后)
+        'is_dead',    # bool: 标记为本 tick 移除 (子卦) 或间隙期 (原生卦)
     )
 
     def __init__(self, value: int, pos: int, length: int):
@@ -129,6 +134,12 @@ class Gua:
         self.energy      = 0
         self.lambda_base = 0
         self.source      = ""     # 创建时的原始文本
+
+        # v1.3 卦元本体
+        self.is_native   = False  # 原生卦？(ingest=True, merge=False)
+        self.origin      = 0      # 出生值 (仅原生卦)
+        self.gap_timer   = 0      # 复生倒计时
+        self.is_dead     = False  # 消散标记
 
     # ---- 内部 ----
 
@@ -158,6 +169,29 @@ class Gua:
     def core_bits(self) -> int:
         """内核段: 已锁死的根基位。"""
         return self.value & self.mask if self.is_solid else 0
+
+    # ---- v1.3 内生属性 ----
+
+    @property
+    def potential(self) -> int:
+        """势 Ψ = ⌊log₂(1 + hit_count)⌋。2ⁿ 指数压平。
+
+        Ψ ∈ [0, VEC_DIM]。低碰撞瞬升，高碰撞几乎不升。
+        """
+        c = self.hit_count + 1
+        psi = 0
+        while c > 1:
+            c >>= 1
+            psi += 1
+        return min(psi, VEC_DIM)
+
+    @property
+    def orbit_step(self) -> int:
+        """轨道步长 ω = max(1, VEC_DIM − Ψ)。
+
+        势越大 → 步长越小 → 轨道越稳。
+        """
+        return max(1, VEC_DIM - self.potential)
 
     # ---- 八条核心运算 ----
 
@@ -311,6 +345,8 @@ class Space:
         value, pos = self.encode(text)
         g = Gua(value, pos, VEC_DIM)
         g.source = text
+        g.is_native = True
+        g.origin = value
 
         self._update_layer_max(g.id_l)
         g.lambda_base = self._derive_lambda_base(g.id_l)
@@ -550,6 +586,7 @@ class Space:
                 if xor_val:
                     C_xor = Gua(xor_val, next_pos, VEC_DIM)
                     C_xor.lambda_base = self._derive_lambda_base(C_xor.id_l)
+                    C_xor.is_native = False
                     self.guas.append(C_xor)
                     merge_count += 1
 
@@ -557,8 +594,50 @@ class Space:
                 if and_val:
                     C_and = Gua(and_val, next_pos + merge_count, VEC_DIM)
                     C_and.lambda_base = self._derive_lambda_base(C_and.id_l)
+                    C_and.is_native = False
                     self.guas.append(C_and)
                     merge_count += 1
+
+        # ---- 3b. 子卦放射衰变 (v1.3) ----
+        # 每 tick 子卦以概率 1/VEC_DIM 消散
+        dead_count = 0
+        rebirth_count = 0
+        for g in self.guas:
+            if g.is_dead:
+                continue
+            if not g.is_native:
+                if random.randint(0, VEC_DIM - 1) == 0:
+                    g.is_dead = True
+                    dead_count += 1
+
+        # ---- 3c. 消散清理 + 原生复生 (v1.3) ----
+        to_remove = []
+        for g in self.guas:
+            if not g.is_dead:
+                # 原生卦间隙期倒计时
+                if g.is_native and g.gap_timer > 0:
+                    g.gap_timer -= 1
+                    if g.gap_timer == 0:
+                        # 复生: 回原点
+                        g.value = g.origin
+                        g.is_dead = False
+                        g.is_solid = False
+                        g.hit_count = 0
+                        g.energy = 0
+                        g.core = 0
+                        rebirth_count += 1
+                continue
+
+            if g.is_native:
+                # 原生卦消散 → 进入间隙期
+                g.gap_timer = VEC_DIM - g.potential
+                g.is_dead = False  # 不清除，进入倒计时
+            else:
+                # 子卦消散 → 永久消失
+                to_remove.append(g)
+
+        for g in to_remove:
+            self.guas.remove(g)
 
         # ---- 4. 固化判据 ----
         solid_count = 0
@@ -575,6 +654,8 @@ class Space:
             'solidified': solid_count,
             'merges':     merge_count,
             'cleanups':   1 if merged else 0,
+            'dead':       dead_count,
+            'rebirths':   rebirth_count,
         }
 
     # ============================================================
@@ -619,6 +700,10 @@ class Space:
                     'e': g.energy,
                     'lb': g.lambda_base,
                     'src': g.source,
+                    'nv': g.is_native,
+                    'or': g.origin,
+                    'gt': g.gap_timer,
+                    'dd': g.is_dead,
                 }
                 for g in self.guas
             ]
@@ -645,6 +730,10 @@ class Space:
             g.energy      = gd.get('e', 0)
             g.lambda_base = gd.get('lb', 0)
             g.source      = gd.get('src', '')
+            g.is_native   = gd.get('nv', False)
+            g.origin      = gd.get('or', 0)
+            g.gap_timer   = gd.get('gt', 0)
+            g.is_dead     = gd.get('dd', False)
             self.guas.append(g)
 
         # 重建运行时推导量

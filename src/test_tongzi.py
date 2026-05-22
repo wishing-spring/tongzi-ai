@@ -228,6 +228,8 @@ g3 = Gua(0x3333, 2, 8)
 g4 = Gua(0x0F0F, 3, 8)    # 4 卦 → 每次放电 2 对碰撞
 for g in [g1, g2, g3, g4]:
     g.lambda_base = 0
+    g.is_native = True   # 手工卦标原生，防止衰变误杀
+    g.origin = g.value
     space4._update_layer_max(g.id_l)
 space4.guas = [g1, g2, g3, g4]
 
@@ -301,6 +303,100 @@ space7.load()
 check(space7.size == 3, "load 后 size 一致")
 for g in space7.guas:
     check(g.source != "", f"source 已恢复: '{g.source}'")
+
+# ================================================================
+# v1.3 卦元本体 · 势 · 子卦衰变 · 原生复生
+# ================================================================
+
+# --- ingest → 原生卦 ---
+space8 = Space()
+g_native = space8.ingest("test")
+check(g_native.is_native, "ingest 产生原生卦: is_native=True")
+check(g_native.origin == g_native.value, f"原生卦 origin=value: {g_native.origin}")
+check(g_native.potential == 0, "新卦 Ψ=0")
+check(g_native.orbit_step == 16, "新卦 ω=16")
+
+# --- potential 计算 ---
+g_native.hit_count = 0
+check(g_native.potential == 0, "C=0 → Ψ=0")
+g_native.hit_count = 1
+check(g_native.potential == 1, "C=1 → Ψ=1")
+g_native.hit_count = 2
+check(g_native.potential == 1, "C=2 → Ψ=1 (⌊log₂(3)⌋=1)")
+g_native.hit_count = 3
+check(g_native.potential == 2, "C=3 → Ψ=2 (⌊log₂4⌋=2)")
+g_native.hit_count = 4
+check(g_native.potential == 2, "C=4 → Ψ=2")
+g_native.hit_count = 15
+check(g_native.potential == 4, "C=15 → Ψ=4")
+g_native.hit_count = 100000
+check(g_native.potential == 16, f"极大C → Ψ=VEC_DIM=16, 实际={g_native.potential}")
+
+# --- orbit_step 计算 ---
+g_native.hit_count = 0
+check(g_native.orbit_step == 16, "Ψ=0 → ω=16")
+g_native.hit_count = 8
+check(g_native.orbit_step == 13, f"Ψ=3 → ω=13, 实际={g_native.orbit_step}")
+g_native.hit_count = 100000
+check(g_native.orbit_step == 1, f"Ψ=16 → ω=1, 实际={g_native.orbit_step}")
+
+# --- merge → 子卦 ---
+space9 = Space()
+ga = space9.ingest("a")
+gb = space9.ingest("b")
+ga.hit_count = 10
+gb.hit_count = 10
+# 强制碰撞触发合体
+h = hamming(ga.moving_bits, gb.moving_bits)
+xor_val = ga.moving_bits ^ gb.moving_bits
+and_val = ga.moving_bits & gb.moving_bits
+child_count_before = space9.size
+if xor_val:
+    child = Gua(xor_val, 999, VEC_DIM)
+    child.is_native = False
+    space9.guas.append(child)
+    check(not child.is_native, "合体子卦: is_native=False")
+    check(child.origin == 0, "合体子卦: origin=0")
+
+# --- 子卦势从 0 开始 ---
+child2 = Gua(0x4000, 1000, VEC_DIM)
+child2.is_native = False
+check(child2.potential == 0, "新生子卦 Ψ=0")
+child2.hit_count = 5
+check(child2.potential == 2, "子卦 C=5 → Ψ=2")
+
+# --- save/load 保留 v1.3 字段 ---
+space8.save()
+space8b = Space()
+check(space8b.load(), "v1.3 load: 成功")
+check(space8b.size == 1, "v1.3 load: size 一致")
+g_restored = space8b.guas[0]
+check(g_restored.is_native, "v1.3 load: is_native 保留")
+check(g_restored.origin == g_native.origin, "v1.3 load: origin 保留")
+
+# --- tick 不做原生卦消散 ---
+space10 = Space()
+g1 = space10.ingest("one")
+g2 = space10.ingest("two")
+# push enough energy for collisions
+for _ in range(300):
+    space10.tick()
+# 原生卦不应该被放射衰变影响
+native_alive = sum(1 for g in space10.guas if g.is_native and not g.is_dead)
+check(native_alive >= 1, f"原生卦存活: {native_alive} >= 1")
+
+# --- 子卦 tick 中放射衰变 ---
+space11 = Space()
+g3 = Gua(0xAAAA, 2000, VEC_DIM)
+g3.is_native = False
+space11.guas.append(g3)
+dead_ticks = 0
+for _ in range(200):
+    space11.tick()
+    if g3.is_dead:
+        dead_ticks += 1
+# 期望 ~VEC_DIM tick 内衰变，200 tick 内大概率
+check(dead_ticks > 0, f"子卦在 200 tick 内衰变: dead_ticks={dead_ticks}")
 
 # ================================================================
 print(f"\n{'='*50}")

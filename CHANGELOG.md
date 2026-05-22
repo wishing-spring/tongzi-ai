@@ -1,5 +1,29 @@
 # Tongzi · Evolution Log
 
+## v1.3-code — P0 Implementation: Ψ · ω · Native/Child · Decay · Rebirth (2026-05-22)
+
+**理论→代码落地。** 卦元本体六机制全入 core。
+
+| Mechanism | Code Location | Status |
+|:--|:--|:--|
+| 势 Ψ | `Gua.potential` property | ✅ |
+| 轨道步长 ω | `Gua.orbit_step` property | ✅ |
+| 原生/子卦区分 | `Gua.is_native` + `origin` | ✅ |
+| 子卦放射衰变 | `tick()`: 1/VEC_DIM 概率 | ✅ |
+| 原生复生 | `tick()`: gap_timer 倒计时 | ✅ |
+| 持久化 | `save/load` 保留 v1.3 字段 | ✅ |
+
+**代码改动**:
+- `Gua.__slots__`: +4 字段 (`is_native`, `origin`, `gap_timer`, `is_dead`)
+- `Gua.__init__`: 初始化新字段
+- `Gua.potential` / `Gua.orbit_step`: 计算属性
+- `Space.ingest`: 标记原生卦
+- `Space.tick`: 三步——子卦衰变 → 原生复生 → 子卦移除
+- `Space.save` / `Space.load`: v1.3 字段持久化
+- **测试**: 80→104 (0 失败)
+
+---
+
 ## Theory v1.3 — Gua Ontology · Potential · Orrery · Formations (2026-05-22)
 
 **卦元本体论定版。** 卦元 ≡ 信息 ≡ 存在——无负载物，无载体-内容分离。
