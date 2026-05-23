@@ -1,5 +1,29 @@
 # Tongzi · Evolution Log
 
+## v1.6-star — 六芒星 · 势场取消 · 双塔对偶 (2026-05-23)
+
+**取消势场。双塔交叠替代二象。**
+
+### 数学根基
+- F₂ 自对偶: F₂^W 的对偶空间 = F₂^W 本身
+- Galois 连接: ascend/descend 互为近似逆
+- 正八面体对偶: 两个四棱锥底对底 = Star 几何原型
+- 重叠区: F₂^W × F₂^(10-W) 笛卡尔积嵌入
+
+### Star 结构
+- 正塔 (2→8, 尖朝上) + 倒塔 (2→8, 尖朝下)
+- 7层重叠: 正8↔倒2 ... 正2↔倒8
+- 10角全通, 每角=入口+出口
+- flow(g, from_up): 正进倒出 / 倒进正出
+- 咬合只在同塔内, 跨塔只在重叠层交换
+
+### 代码
+- `src/star.py`: Star 类, 双塔 flow
+- `src/tongzi_kernel.py`: Pyramid.flow() 两步半
+- 删除: 势场相关, play_batch/play_blocks/tongzi_blocks(旧)
+
+
+
 ## v1.5-mortise — 第三组基核·榫卯·空间仓库 (2026-05-23)
 
 **从零重建第三组。卦爻回归纯值，外挂tools/，榫卯内生接触。**

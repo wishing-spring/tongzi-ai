@@ -1,6 +1,6 @@
 # MEMORY.md — 长期记忆
 
-**更新**: 2026-05-23 UTC | **状态**: 童子 v1.5-pyramid · 零部件架构 · 金字塔定版 · 榫卯内生接触
+**更新**: 2026-05-23 UTC | **状态**: 童子 v1.6-star · 六芒星定版 · 势场取消 · 双塔对偶
 
 ---
 
@@ -43,17 +43,15 @@
 ### 四条公理（不可动）
 XOR交换 · XOR自消 · 汉明距离 · 旋转保距
 
-### 核心模块 (v1.5-pyramid)
+### 核心模块 (v1.6-star)
 | 文件 | 内容 |
 |:--|:--|
-| `src/tongzi_kernel.py` | Gua(纯值) + Layer(一层砖) + Pyramid(7层塔: ascend/descend/resolve) |
-| `src/mortise.py` | 榫卯: 8棱角凸凹 + 6面统一接触点 + fit()三态判定 |
-| `src/tools/axioms.py` | 4公理 + 8群运算: hamming/rotate/gray/collide/orbit/stretch/ball |
-| `src/tools/encode.py` | 编解码: text_to_seed/encode/batch_encode |
-| `src/tools/blocks.py` | 积木拼装 |
-| `src/tongzi_blocks.py` | 工坊入口 |
-| `src/observe.py` | 全对全接触观察 |
-| `src/pyramid.py` | 金字塔层叠展示 |
+| `src/tongzi_kernel.py` | Gua + Layer + Pyramid(ascend/descend/resolve/flow) |
+| `src/mortise.py` | 榫卯: 8棱角凸凹 + fit()三态判定 |
+| `src/star.py` | Star: 正反双塔交叠, flow跨越双塔 |
+| `src/tools/axioms.py` | 4公理 + 8群运算 |
+| `src/tools/encode.py` | 编解码 |
+| `src/flow_demo.py` | 两步半流程演示 |
 
 ### 铁律
 零浮点 · 零矩阵 · 零梯度 · 零词嵌入 · 零注意力 · 零自回归
