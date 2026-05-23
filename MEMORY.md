@@ -1,6 +1,6 @@
 # MEMORY.md — 长期记忆
 
-**更新**: 2026-05-23 UTC | **状态**: 童子 v1.4 · 二象架构定版 · 势场待建 · 维度标尺元通卦阵域象网体场虚
+**更新**: 2026-05-23 UTC | **状态**: 童子 v1.5-pyramid · 零部件架构 · 金字塔定版 · 榫卯内生接触
 
 ---
 
@@ -31,6 +31,7 @@
 **维度标尺**: 元(2⁰)→通(2¹)→卦(2⁴)→阵(2⁸)→域(2¹⁶)→象(2²⁴)→网(2³²)→体(2⁴⁰)→场(2⁴⁸)→虚(2⁶⁴)
 
 **势场铁律**: 零浮点·零矩阵·零梯度·零嵌入·零注意力·零自回归·零负载物
+**v1.5新增**: 砖非成品·位置即意义·分辨率梯度替代梯度下降
 **势场接口**: 文本→场扩散→结构锚点→象格编码→卦碰撞
 
 **回溯**: `git checkout <tag>` | **进化日志**: `CHANGELOG.md`
@@ -42,13 +43,17 @@
 ### 四条公理（不可动）
 XOR交换 · XOR自消 · 汉明距离 · 旋转保距
 
-### 核心模块
+### 核心模块 (v1.5-pyramid)
 | 文件 | 内容 |
 |:--|:--|
-| `src/tongzi_constants.py` | VEC_DIM=16, FULL_MASK, φ_bits(256) |
-| `src/tongzi_core.py` | Gua类 + Space容器：8运算 + 固化 + 密度 + express |
-| `src/tongzi.py` | 交互入口：ingest, /tick, /status, /list, /show, /chain |
-| `src/test_tongzi.py` | 81测试，13节，0失败 |
+| `src/tongzi_kernel.py` | Gua(纯值) + Layer(一层砖) + Pyramid(7层塔: ascend/descend/resolve) |
+| `src/mortise.py` | 榫卯: 8棱角凸凹 + 6面统一接触点 + fit()三态判定 |
+| `src/tools/axioms.py` | 4公理 + 8群运算: hamming/rotate/gray/collide/orbit/stretch/ball |
+| `src/tools/encode.py` | 编解码: text_to_seed/encode/batch_encode |
+| `src/tools/blocks.py` | 积木拼装 |
+| `src/tongzi_blocks.py` | 工坊入口 |
+| `src/observe.py` | 全对全接触观察 |
+| `src/pyramid.py` | 金字塔层叠展示 |
 
 ### 铁律
 零浮点 · 零矩阵 · 零梯度 · 零词嵌入 · 零注意力 · 零自回归

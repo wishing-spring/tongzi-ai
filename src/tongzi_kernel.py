@@ -1,15 +1,15 @@
 # Copyright (c) 2026 Tongzi Project (wishing-spring)
 # Licensed under the MIT License. See LICENSE file for details.
 """
-童子 · 第3组 · 卦爻
-=====================
-卦爻: 0 和 1 组成的纯粹单位。
+童子 · 第3组 · 金字塔
+=======================
+卦爻是砖。金字塔是结构。
 
-  Gua  — 16 位 F₂ 值, 仅此而已
-  yao  — 拆解: value → [0,1,0,...]
+  Gua      — 16位 F₂ 值, 仅此而已
+  Pyramid  — 7层分辨率梯度
+  Layer    — 一层砖 (2^W 块)
 
-无出生位置, 无运算, 无方法。
-操作见 tools.axioms, 编码见 tools.encode。
+操作: ascend(升)/descend(降)/resolve(解析)/put(放砖)
 """
 
 from __future__ import annotations
@@ -29,16 +29,11 @@ def phi_slice(pos: int, length: int = VEC_DIM) -> int:
 
 
 # ============================================================
-# 卦爻
+# 卦爻 — 砖
 # ============================================================
 
 class Gua:
-    """16 位 F₂ 卦爻。纯粹的值, 无负载。
-
-        1001111000110111
-        丨丨丨丨丨丨丨丨丨丨丨丨丨丨丨丨
-        爻爻爻爻爻爻爻爻爻爻爻爻爻爻爻爻
-    """
+    """16 位 F₂ 卦爻。纯粹的值, 无负载。"""
 
     __slots__ = ('value',)
 
@@ -50,7 +45,7 @@ class Gua:
 
 
 def yao(g: Gua) -> list:
-    """拆卦为爻: Gua → 16 条 [0,1,0,1,...]"""
+    """拆卦为爻。"""
     return [(g.value >> (15 - i)) & 1 for i in range(16)]
 
 
@@ -59,182 +54,143 @@ def bits(g: Gua) -> str:
     return f"{g.value:016b}"
 
 
-def form(g: Gua, width: int = 16) -> str:
-    """卦的平面形态。"""
-    chars = []
-    for i in range(width):
-        bit = (g.value >> (width - 1 - i)) & 1
-        chars.append('1' if bit else '.')
-    return ''.join(chars)
+# ============================================================
+# 层
+# ============================================================
 
+class Layer:
+    """一层砖。宽度 W → 2^W 块。
 
-def form_lines(g: Gua, width: int = 16) -> str:
-    """卦的爻线形态。"""
-    lines = []
-    for i in range(width):
-        bit = (g.value >> (width - 1 - i)) & 1
-        lines.append('===' if bit else '---')
-    return '\n'.join(lines)
-
-
-def voxel(g: Gua, layout: tuple = None) -> tuple:
-    """卦 → 立体体素。
-
-    低位优先: g.value 的低 N 位映射到体素。
-    N = X*Y*Z
+    ┌─┬─┬─┬─┐
+    ├─┼─┼─┼─┤  ← 4爻层, 16块
+    └─┴─┴─┴─┘
     """
-    if layout is None:
-        layout = (2, 2, 4)
-    X, Y, Z = layout
-    total = X * Y * Z
 
-    grid = [[[False]*X for _ in range(Y)] for __ in range(Z)]
-    for i in range(total):
-        bit = (g.value >> (total - 1 - i)) & 1
-        z = i // (X * Y)
-        remainder = i % (X * Y)
-        y = remainder // X
-        x = remainder % X
-        grid[z][y][x] = bool(bit)
-    return grid
+    def __init__(self, width: int):
+        if width < 2 or width > 16:
+            raise ValueError(f"层宽需 2~16, 不是 {width}")
+        self.width = width
+        self.size = 1 << width
+        self.bricks: list[Gua] = [Gua(i) for i in range(self.size)]
+
+    def __len__(self):
+        return self.size
+
+    def __getitem__(self, i: int) -> Gua:
+        return self.bricks[i]
+
+    def __repr__(self):
+        return f"Layer({self.width}爻, {self.size}块)"
+
+
+# ============================================================
+# 金字塔
+# ============================================================
+
+class Pyramid:
+    """7 层分辨率梯度。
+
+          2爻 (4)
+         3爻 (8)
+        4爻 (16)
+       5爻 (32)
+      6爻 (64)
+     7爻 (128)
+    8爻 (256)
+
+    尖 = 粗判, 底 = 精辨。
+    """
+
+    def __init__(self, min_width: int = 2, max_width: int = 8):
+        self.layers: dict[int, Layer] = {}
+        for w in range(min_width, max_width + 1):
+            self.layers[w] = Layer(w)
+        self.min = min_width
+        self.max = max_width
+
+    # ----- 升降 -----
+
+    def ascend(self, g: Gua, from_layer: int) -> tuple[Gua, int]:
+        """上一层: 砍掉最低位 → 分辨率减半。"""
+        if from_layer <= self.min:
+            return g, from_layer
+        parent = Gua(g.value >> 1)
+        return parent, from_layer - 1
+
+    def descend(self, g: Gua, from_layer: int) -> list[Gua]:
+        """下一层: 补一个位 → 分成两个子卦。"""
+        if from_layer >= self.max:
+            return [g]
+        base = g.value << 1
+        return [Gua(base), Gua(base | 1)]
+
+    # ----- 解析 -----
+
+    def resolve(self, target: Gua):
+        """从尖往下走, 哪层停了就返回哪层。
+
+        走法: target 跟每层的每个卦比, 全碰就停, 有锁就继续往下。
+        """
+        g = target
+        for w in range(self.min, self.max + 1):
+            trimmed = Gua(g.value & ((1 << w) - 1))
+            # 看这一层有咬合吗 (用前后面 凸凹接触)
+            has_lock = False
+            for brick in self.layers[w].bricks:
+                if _fit(brick, trimmed):
+                    has_lock = True
+                    break
+            if not has_lock:
+                return w - 1, g  # 停在上一层
+        return self.max, g  # 走到底了
+
+    # ----- 放砖 -----
+
+    def put(self, g: Gua, layer: int):
+        """替换指定层的一块砖。其他层不动。"""
+        if layer not in self.layers:
+            raise ValueError(f"无第{layer}爻层")
+        idx = g.value & ((1 << layer) - 1)  # 取低 layer 位做索引
+        self.layers[layer].bricks[idx] = g
+
+    def __repr__(self):
+        lines = [f"Pyramid({self.min}爻→{self.max}爻)"]
+        for w in range(self.max, self.min - 1, -1):
+            indent = "  " * (self.max - w)
+            lines.append(f"{indent}{w}爻: {self.layers[w].size}块")
+        return '\n'.join(lines)
+
+
+# ============================================================
+# 内置咬合判断 (凸凹接触)
+# ============================================================
+
+def _fit(a: Gua, b: Gua) -> bool:
+    """a 的前面凸能插进 b 的后面凹?
+    a+Z 的角对 b-Z 的角: {0→7, 1→6, 2→5, 3→4}
+    """
+    az = [(a.value >> i) & 1 for i in range(4)]
+    bz = [(b.value >> (7 - i)) & 1 for i in range(4)]
+    for x, y in zip(az, bz):
+        if x == 1 and y == 1:
+            return False  # 凸凸碰撞→不咬合
+    return any(x == 1 and y == 0 for x, y in zip(az, bz))
+
+
+# ============================================================
+# 内置形态 (精简)
+# ============================================================
+
+def form(g: Gua, width: int = 8) -> str:
+    """卦的平面形态。1=# 0=. """
+    return ''.join('#' if (g.value >> (width - 1 - i)) & 1 else '.'
+                   for i in range(width))
 
 
 def voxel_layout(width: int) -> tuple:
-    """给定位宽 → 最优 3D 布局。
-
-    2→(2,1,1)   3→(3,1,1)   4→(2,2,1)   5→(5,1,1)
-    6→(3,2,1)   7→(7,1,1)   8→(2,2,2)   9→(3,3,1)
-    10→(5,2,1)  11→(11,1,1) 12→(3,2,2)  13→(13,1,1)
-    14→(7,2,1)  15→(5,3,1)  16→(2,2,4)
-    """
-    layouts = {
-        2:  (2, 1, 1),   3:  (3, 1, 1),
-        4:  (2, 2, 1),   5:  (5, 1, 1),
-        6:  (3, 2, 1),   7:  (7, 1, 1),
-        8:  (2, 2, 2),   9:  (3, 3, 1),
-        10: (5, 2, 1),   11: (11, 1, 1),
-        12: (3, 2, 2),   13: (13, 1, 1),
-        14: (7, 2, 1),   15: (5, 3, 1),
-        16: (2, 2, 4),
+    """给定位宽 → 最优 3D 布局。"""
+    m = {
+        2:(2,1,1), 3:(3,1,1), 4:(2,2,1), 5:(5,1,1),
+        6:(3,2,1), 7:(7,1,1), 8:(2,2,2), 16:(2,2,4)
     }
-    return layouts.get(width, (width, 1, 1))
-
-
-def voxel_view(g: Gua, layout: tuple = None) -> str:
-    """立体卦爻的三视图 + 逐层。"""
-    if layout is None:
-        layout = voxel_layout(16)
-    X, Y, Z = layout
-    total = X * Y * Z
-    g3 = voxel(g, layout)
-
-    # 俯视 (top-down)
-    top = []
-    for y in range(Y):
-        row = ''
-        for x in range(X):
-            filled = any(g3[z][y][x] for z in range(Z))
-            row += '#' if filled else '.'
-        top.append(row)
-
-    # 前视 (front)
-    front = []
-    for z in range(Z-1, -1, -1):
-        row = ''
-        for x in range(X):
-            filled = any(g3[z][y][x] for y in range(Y))
-            row += '#' if filled else '.'
-        front.append(row)
-
-    # 右视 (right)
-    right = []
-    for z in range(Z-1, -1, -1):
-        row = ''
-        for y in range(Y):
-            filled = any(g3[z][y][x] for x in range(X))
-            row += '#' if filled else '.'
-        right.append(row)
-
-    # 逐层
-    layers = []
-    for z in range(Z-1, -1, -1):
-        lr = []
-        for y in range(Y):
-            row = ''
-            for x in range(X):
-                row += '#' if g3[z][y][x] else '.'
-            lr.append(row)
-        layers.append('\n'.join(lr))
-
-    lines = [f"体素 {X}x{Y}x{Z}  ({total}爻)"]
-    lines.append("俯视   前视   右视")
-    for i in range(max(len(top), len(front))):
-        t = top[i] if i < len(top) else '  '
-        f = front[i] if i < len(front) else '  '
-        r = right[i] if i < len(right) else '  '
-        lines.append(f"{t}     {f}     {r}")
-    lines.append("")
-    for z in range(Z):
-        lines.append(f"--层{z}--")
-        lines.append(layers[Z-1-z])
-
-    return '\n'.join(lines)
-
-
-def fit(a: Gua, b: Gua, width: int = 16) -> str:
-    """榫卯测试: 两个同宽卦爻是否互锁。"""
-    mask = (1 << width) - 1
-    va = a.value & mask
-    vb = b.value & mask
-    overlap = va & vb
-
-    # 简化: 无重叠 = 可互锁 (实际需要邻接检测, 这里先做基础判断)
-    if overlap == 0 and va != 0 and vb != 0:
-        return "互锁"
-    elif overlap != 0:
-        return f"碰撞 ({overlap.bit_count()} 位)"
-    else:
-        return "无接触"
-
-
-# ============================================================
-# 生成
-# ============================================================
-
-def generate_gua(pos: int) -> Gua:
-    """φ 母体 → 一个卦爻。位置只用于取位, 不绑定卦上。"""
-    return Gua(phi_slice(pos))
-
-
-# ============================================================
-# 空间
-# ============================================================
-
-class Space:
-    """卦元仓库。
-
-    纯粹容器。不管理、不登记、不计数。
-    卦放进去就在。拿出来就离开。
-    """
-
-    def __init__(self, name: str = ""):
-        self.name = name
-        self._guas: list[Gua] = []
-
-    def put(self, g: Gua):
-        """放入一个卦元。"""
-        self._guas.append(g)
-
-    def take(self, idx: int = -1) -> Gua:
-        """取出最末卦元 (默认) 或指定索引。取出即离开仓库。"""
-        return self._guas.pop(idx)
-
-    def peek(self) -> list[Gua]:
-        """看一下仓库里有什么。不取出。"""
-        return list(self._guas)
-
-    def __len__(self):
-        return len(self._guas)
-
-    def __repr__(self):
-        return f"Space('{self.name}', {len(self._guas)} 卦)"
+    return m.get(width, (width, 1, 1))
