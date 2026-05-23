@@ -304,6 +304,7 @@ class Space:
         self.tick_count: int = 0
         self._max_id_l: int = 0       # 当前最大层编码 (运行时更新)
         self._density_cache: Dict[int, float] = {}  # id(gua) → S(x)
+        self._seq_pos: int = 0        # 序列摄入位置计数器
 
     # ============================================================
     # φ 编码: 文本 → 卦
@@ -334,6 +335,46 @@ class Space:
         value = int(''.join(chars), 2)
 
         return value, pos
+
+    @staticmethod
+    def _sliding_encode(pos: int) -> int:
+        """从 φ 指定位置取 VEC_DIM 位。"""
+        chars = []
+        for i in range(VEC_DIM):
+            chars.append(PHI_BITS[(pos + i) % PHI_LEN])
+        return int(''.join(chars), 2)
+
+    def ingest_batch(self, texts: list, step: int = 1, 
+                     anchor_step: int = 4) -> List[Gua]:
+        """编织摄入：同批次共享 φ 锚点，批间锚点微步重叠。
+
+        第 i 个词: value = φ(anchor) ^ (1 << (i % VEC_DIM))
+        批次间: 锚点只推进 anchor_step (不是 VEC_DIM)
+
+        anchor_step=4 → 相邻批次 12/16 位重叠 → 全语料成网
+        anchor_step=16 → 退化为线性（批间无关联）
+
+        铁律兼容: 无负载物、纯 F₂ XOR、零浮点。
+        """
+        anchor = self._seq_pos
+        base = self._sliding_encode(anchor)
+
+        guas = []
+        for i, text in enumerate(texts):
+            mask = 1 << (i % VEC_DIM)
+            value = (base ^ mask) & FULL_MASK
+            g = Gua(value, anchor, VEC_DIM)
+            g.source = text
+            g.is_native = True
+            g.origin = value
+            self._update_layer_max(g.id_l)
+            g.lambda_base = self._derive_lambda_base(g.id_l)
+            self.guas.append(g)
+            guas.append(g)
+
+        # 锚点微步推进——批间重叠
+        self._seq_pos = (anchor + anchor_step) % PHI_LEN
+        return guas
 
     # ============================================================
     # 卦管理

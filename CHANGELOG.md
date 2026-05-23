@@ -1,5 +1,16 @@
 # Tongzi · Evolution Log
 
+## v1.4-dual — 二象架构定版 (2026-05-23)
+
+**象格+势场双部件架构定版。** 维度标尺（元通卦阵域象网体场虚）、势场设计规格、二象接口规范。`ingest_batch()` 编织摄入（批内汉明=2）。
+
+- dimensions: 元(2⁰)通(2¹)卦(2⁴)阵(2⁸)域(2¹⁶)象(2²⁴)网(2³²)体(2⁴⁰)场(2⁴⁸)虚(2⁶⁴)
+- 象格: F₂卦群碰撞空间（已有），位级在卦
+- 势场: 离散格点扩散场（待建），瞄准象→场级
+- φ母体: 256位共根，两种流法
+- ingest_batch: anchor_step=4 编织，批内汉明=2精确可控
+- docs: `tongzi-dual-aspect-architecture.md`
+
 ## v1.3-code — P0 Implementation: Ψ · ω · Native/Child · Decay · Rebirth (2026-05-22)
 
 **理论→代码落地。** 卦元本体六机制全入 core。
