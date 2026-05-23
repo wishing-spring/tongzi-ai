@@ -12,7 +12,10 @@
 """
 
 from tongzi_constants import VEC_DIM, FULL_MASK, PHI_BITS, PHI_LEN
-from tongzi_kernel import Gua, generate_gua
+from tongzi_kernel import Gua, phi_slice as _phi_slice
+
+def generate_gua(pos: int) -> Gua:
+    return Gua(_phi_slice(pos))
 
 
 def text_to_seed(text: str) -> int:

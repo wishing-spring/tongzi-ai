@@ -144,7 +144,41 @@ class Pyramid:
                 return w - 1, g  # 停在上一层
         return self.max, g  # 走到底了
 
-    # ----- 放砖 -----
+    # ----- 两步半流程 -----
+
+    def flow(self, input_gua: Gua):
+        """两步半: 路由 → 碰撞 → 归类。
+
+        第1步: resolve(输入) → 定位到目标层
+        第2步: 层内榫卯碰撞 → 找到所有咬合的砖
+        半步:  resolve(结果) → 递归归类
+
+        返回: (入层, 入值, 咬合数, 出层, 出值)
+        """
+        # 第1步: 路由——输入停在金字塔的哪层
+        in_layer, trimmed = self.resolve(input_gua)
+
+        # 第2步: 碰撞——在这一层跟所有砖怼, 看谁咬合
+        if in_layer >= self.min:
+            matches = [b for b in self.layers[in_layer].bricks
+                       if _fit(trimmed, b)]
+        else:
+            matches = []
+
+        # 半步: 归类——如果有匹配, 取中间的砖重新 resolve
+        if matches:
+            mid = matches[len(matches) // 2]
+            out_layer, out_gua = self.resolve(mid)
+        else:
+            out_layer, out_gua = in_layer, trimmed
+
+        return {
+            '入层': in_layer,
+            '入值': trimmed,
+            '咬合': len(matches),
+            '出层': out_layer,
+            '出值': out_gua,
+        }
 
     def put(self, g: Gua, layer: int):
         """替换指定层的一块砖。其他层不动。"""
