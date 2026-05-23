@@ -1,5 +1,37 @@
 # Tongzi · Evolution Log
 
+## v1.5-mortise — 第三组基核·榫卯·空间仓库 (2026-05-23)
+
+**从零重建第三组。卦爻回归纯值，外挂tools/，榫卯内生接触。**
+
+### 架构
+- `tongzi_kernel.py`: Gua(纯value) + Space(空仓库) + phi_slice + yao/bits/form/voxel
+- `tools/axioms.py`: 四条公理 + 8群运算（hamming/rotate/gray/collide/orbit/stretch/ball）
+- `tools/encode.py`: 编解码
+- `tools/blocks.py`: 积木拼装
+- `tongzi_blocks.py`: 工坊入口
+- `mortise.py`: 榫卯结构——8棱角凹凸，6面统一接触点
+
+### 关键设计
+- **榫卯卦元**: 8位→8棱角。bit=1→凸 bit=0→凹。接触三态：咬合(凸∧凹) 碰撞(凸∧凸) 空过(凹∧凹)
+- **无黏连**: 咬合纯几何匹配，无外力，随时分离
+- **Space仓库**: put/take/peek，不管理不登记不计数
+- **全层满仓**: 2爻→8爻全枚举，508卦元，3584爻
+- **接触统计**: 256卦全对全+Z/-Z面 → 咬合25.4% 碰撞68.4% 空过6.2%
+
+### 解决问题
+- **交互内生**: 规则从外部容器回到卦元自身形态。凸凹即指令，接触即交互
+- **名册取消**: 卦元不管配对数，只管存在
+- **无外部时钟**: 碰上了就是交互，不碰就不交互
+
+### 观察文件
+- `src/observe.py`: 全对全接触矩阵
+- `src/build_layers.py`: 七层生成器
+- `src/check_guas.py`: 独特性验证
+- `src/wake_all.py`: 全规则运转
+
+
+
 ## v1.4-dual — 二象架构定版 (2026-05-23)
 
 **象格+势场双部件架构定版。** 维度标尺（元通卦阵域象网体场虚）、势场设计规格、二象接口规范。`ingest_batch()` 编织摄入（批内汉明=2）。
