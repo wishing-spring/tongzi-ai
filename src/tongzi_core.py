@@ -598,8 +598,8 @@ class Space:
                     self.guas.append(C_and)
                     merge_count += 1
 
-        # ---- 3b. 子卦放射衰变 (v1.3) ----
-        # 每 tick 子卦以概率 1/VEC_DIM 消散
+        # ---- 3b. 放射衰变 (v1.3) ----
+        # 子卦: 概率 1/VEC_DIM。原生卦: 概率 1/VEC_DIM² (慢 16 倍)
         dead_count = 0
         rebirth_count = 0
         for g in self.guas:
@@ -607,6 +607,11 @@ class Space:
                 continue
             if not g.is_native:
                 if random.randint(0, VEC_DIM - 1) == 0:
+                    g.is_dead = True
+                    dead_count += 1
+            else:
+                # 原生卦慢消散——势越大越稳
+                if random.randint(0, VEC_DIM * VEC_DIM - 1) == 0:
                     g.is_dead = True
                     dead_count += 1
 

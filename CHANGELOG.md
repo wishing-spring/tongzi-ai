@@ -10,7 +10,8 @@
 | 轨道步长 ω | `Gua.orbit_step` property | ✅ |
 | 原生/子卦区分 | `Gua.is_native` + `origin` | ✅ |
 | 子卦放射衰变 | `tick()`: 1/VEC_DIM 概率 | ✅ |
-| 原生复生 | `tick()`: gap_timer 倒计时 | ✅ |
+| 原生卦慢消散 | `tick()`: 1/VEC_DIM² 概率 | ✅ |
+| 原生复生 | `tick()`: gap_timer = VEC_DIM−Ψ | ✅ |
 | 持久化 | `save/load` 保留 v1.3 字段 | ✅ |
 
 **代码改动**:
@@ -18,9 +19,11 @@
 - `Gua.__init__`: 初始化新字段
 - `Gua.potential` / `Gua.orbit_step`: 计算属性
 - `Space.ingest`: 标记原生卦
-- `Space.tick`: 三步——子卦衰变 → 原生复生 → 子卦移除
+- `Space.tick`: 三步——子卦衰变 → 原生消散 → 原生复生
 - `Space.save` / `Space.load`: v1.3 字段持久化
-- **测试**: 80→104 (0 失败)
+- **烟雾验证**: 16 卦 500 tick → 60 碰撞 103 合体 30 复生 ✅
+- **测试**: 80→105 (0 失败)
+- **理论文档**: 新增第 15 节「代码落地状态」
 
 ---
 

@@ -129,7 +129,7 @@ def cmd_chain(space: Space, args: list) -> str:
 
 
 def main():
-    print("童子 · F₂ 极简群域")
+    print("童子 · F2 极简群域")
     print("投石入水，看涟漪。")
 
     space = Space()

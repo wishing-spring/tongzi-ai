@@ -784,6 +784,41 @@ Space.engraving_B  : BigDipperEngraving
 
 ---
 
+## 15. 代码落地状态 (v1.3-code)
+
+### P0 已实现 ✅
+
+| 机制 | 公式 | 代码位置 | 状态 |
+|:--|:--|:--|:--|
+| 卦元本体 | `x ∈ F₂¹⁶` IS 信息 | `Gua.__init__` | ✅ |
+| 原生/子卦 | `is_native` + `origin` | `Gua`, `Space.ingest` | ✅ |
+| 势 Ψ | `⌊log₂(1 + hit_count)⌋` | `Gua.potential` 属性 | ✅ |
+| 轨道步长 ω | `max(1, VEC_DIM − Ψ)` | `Gua.orbit_step` 属性 | ✅ |
+| 子卦放射衰变 | `P = 1/VEC_DIM` / tick | `Space.tick` → 3b | ✅ |
+| 原生卦慢消散 | `P = 1/VEC_DIM²` / tick | `Space.tick` → 3b | ✅ |
+| 原生复生 | `gap_timer = VEC_DIM − Ψ` | `Space.tick` → 3c | ✅ |
+| 持久化 | save/load 全字段 | `Space.save` / `Space.load` | ✅ |
+
+### 基理说明
+
+**子卦衰变**: 每 tick 以 1/16 概率消散。碰撞的唯一痕迹——海浪退去后的贝壳，终将消失。
+
+**原生卦慢消散**: 以 1/256 概率消散（慢 16 倍）。消散后进入间隙期（`gap_timer = 16 − Ψ`），势越大复生越快——信息密度高的卦"记得"回家的路更短。间隙期满后回到原点值 `x₀`，hit_count/energy/core 归零重生。
+
+**固化保护**: 已固化的卦不生不死——内核锁死，外圈参与碰撞但自己不变。
+
+**测试**: `src/test_tongzi.py` — 105 测试，0 失败。
+
+### 待实现
+
+| 机制 | 优先级 | 说明 |
+|:--|:--|:--|
+| 环检测 | P1 | 星象仪——orbit 同步判据 |
+| 刻痕 L/B | P1 | 洛书九宫 + 北斗七星流场 |
+| 环碰重组 | P2 | 六卦 → S(i,j,k) → 最优三元组 |
+
+---
+
 ## 参考
 
 - 实验档案：`experiments/`

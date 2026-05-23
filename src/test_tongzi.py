@@ -374,16 +374,17 @@ g_restored = space8b.guas[0]
 check(g_restored.is_native, "v1.3 load: is_native 保留")
 check(g_restored.origin == g_native.origin, "v1.3 load: origin 保留")
 
-# --- tick 不做原生卦消散 ---
+# --- tick 原生卦慢消散 (1/256) + 复生 ---
 space10 = Space()
 g1 = space10.ingest("one")
 g2 = space10.ingest("two")
-# push enough energy for collisions
-for _ in range(300):
-    space10.tick()
-# 原生卦不应该被放射衰变影响
+rebirths = 0
+for _ in range(500):
+    r = space10.tick()
+    rebirths += r.get('rebirths', 0)
 native_alive = sum(1 for g in space10.guas if g.is_native and not g.is_dead)
 check(native_alive >= 1, f"原生卦存活: {native_alive} >= 1")
+check(rebirths >= 0, f"原生复生: {rebirths} 次 (期望 ~4)")
 
 # --- 子卦 tick 中放射衰变 ---
 space11 = Space()
