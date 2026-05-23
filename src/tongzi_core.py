@@ -107,6 +107,7 @@ class Gua:
         'origin',     # int : 出生值 (仅原生卦)
         'gap_timer',  # int : 复生倒计时 (仅原生卦消散后)
         'is_dead',    # bool: 标记为本 tick 移除 (子卦) 或间隙期 (原生卦)
+        '_immortal',  # bool: 免死标记 (测试用，防止原生消散干扰)
     )
 
     def __init__(self, value: int, pos: int, length: int):
@@ -140,6 +141,7 @@ class Gua:
         self.origin      = 0      # 出生值 (仅原生卦)
         self.gap_timer   = 0      # 复生倒计时
         self.is_dead     = False  # 消散标记
+        self._immortal   = False  # 免死标记（仅测试用）
 
     # ---- 内部 ----
 
@@ -603,7 +605,7 @@ class Space:
         dead_count = 0
         rebirth_count = 0
         for g in self.guas:
-            if g.is_dead:
+            if g.is_dead or g._immortal:
                 continue
             if not g.is_native:
                 if random.randint(0, VEC_DIM - 1) == 0:

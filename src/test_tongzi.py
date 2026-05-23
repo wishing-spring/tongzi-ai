@@ -228,8 +228,9 @@ g3 = Gua(0x3333, 2, 8)
 g4 = Gua(0x0F0F, 3, 8)    # 4 卦 → 每次放电 2 对碰撞
 for g in [g1, g2, g3, g4]:
     g.lambda_base = 0
-    g.is_native = True   # 手工卦标原生，防止衰变误杀
+    g.is_native = True   # 手工卦标原生
     g.origin = g.value
+    g._immortal = True   # 测试卦免消散
     space4._update_layer_max(g.id_l)
 space4.guas = [g1, g2, g3, g4]
 
