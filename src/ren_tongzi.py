@@ -1,21 +1,48 @@
 # -*- coding: utf-8 -*-
 """
-童子 · Ren态三轴全系统
-=====================
+童子 · Ren态三轴全系统 v1.8-r4
+===============================
 天(TIAN)锚 → 人(REN)挂 → 地(DI)坍缩
-三轴联合咬合 · 路径持久化 · 可追溯因果链
+三轴联合咬合 · 全碰选最优 · A轴笔画高位 · 门槛>=4位
 """
 import sys; sys.path.insert(0, r'C:\Users\45757\Desktop\lingxiAI_v5.0\src')
 from tongzi_kernel import Gua, Pyramid, LayerPool
 from tools.tri_encode import tri_encode
-from tools.strokes import get_strokes, STROKE_COUNT
+from tools.strokes import get_strokes, STROKE_COUNT, get_structure, get_component, script_tag
 
-FIT_MIN = 3  # 16位≥3位匹配
+FIT_MIN = 4  # 16位>=4位匹配 — 真拐点，全咬率20.8%
 
 # ============================================================
 def _fit_16(a: Gua, b: Gua, m=FIT_MIN) -> bool:
     match = (a.value & 0xFFFF) & (~b.value & 0xFFFF)
     return match.bit_count() >= m
+
+
+def _encode_A_weighted(ch: str) -> Gua:
+    """A轴编码v2: 笔画占高位(权重提升)，码点占低位。
+
+    旧: [15:14]=00 [13:7]=码低7 [6:0]=笔画
+    新: [15:9]=笔画(0-63) [8:0]=码低9
+    同笔画数→高位匹配→更易咬合。
+    """
+    cp = ord(ch)
+    sc = min(get_strokes(ch), 63)
+    cp9 = cp & 0x1FF
+    return Gua(((sc << 9) | cp9) & 0xFFFF)
+
+
+def _tri_encode_v2(ch: str) -> tuple:
+    """一字→(G_A_v2, G_B, G_C)。仅A轴改变，B/C不动。"""
+    tag = script_tag(ch)
+    if tag != 0:
+        cp = ord(ch)
+        v = (tag << 14) | (cp & 0x3FFF)
+        g = Gua(v)
+        return (g, g, g)
+
+    gA = _encode_A_weighted(ch)
+    _, gB, gC = tri_encode(ch)
+    return (gA, gB, gC)
 
 # ============================================================
 class RenNode:

@@ -69,9 +69,9 @@ for a, b, label in pairs:
     na, nb = rt.archives[a], rt.archives[b]
 
     # 直接咬合测试
-    ok_a = _fit_16(na.gA, nb.gA, 3) or _fit_16(nb.gA, na.gA, 3)
-    ok_b = _fit_16(na.gB, nb.gB, 3) or _fit_16(nb.gB, na.gB, 3)
-    ok_c = _fit_16(na.gC, nb.gC, 3) or _fit_16(nb.gC, na.gC, 3)
+    ok_a = _fit_16(na.gA, nb.gA, 4) or _fit_16(nb.gA, na.gA, 4)
+    ok_b = _fit_16(na.gB, nb.gB, 4) or _fit_16(nb.gB, na.gB, 4)
+    ok_c = _fit_16(na.gC, nb.gC, 4) or _fit_16(nb.gC, na.gC, 4)
     axes = [ok_a, ok_b, ok_c]
     ax_sum = sum(axes)
 
