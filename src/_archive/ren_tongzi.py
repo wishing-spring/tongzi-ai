@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-童子 · Ren态三轴全系统 v1.8-r4
-===============================
-天(TIAN)锚 → 人(REN)挂 → 地(DI)坍缩
-三轴联合咬合 · 全碰选最优 · A轴笔画高位 · 门槛>=4位
+童子 · 三态因果全系统 v1.8
+===========================
+锚定态(Anchor) → 活性态(Active) → 结果态(Result)
+三轴联合位锁定 · 全候选最优匹配 · A轴笔画高位 · 阈值>=4位
 """
 import sys; sys.path.insert(0, r'C:\Users\45757\Desktop\lingxiAI_v5.0\src')
 from tongzi_kernel import Gua, Pyramid, LayerPool
@@ -19,16 +19,15 @@ def _fit_16(a: Gua, b: Gua, m=FIT_MIN) -> bool:
 
 
 def _encode_A_weighted(ch: str) -> Gua:
-    """A轴编码v2: 笔画占高位(权重提升)，码点占低位。
+    """A轴编码v2: 笔画占高位(6b)，码点占低位(10b)。
 
-    旧: [15:14]=00 [13:7]=码低7 [6:0]=笔画
-    新: [15:9]=笔画(0-63) [8:0]=码低9
-    同笔画数→高位匹配→更易咬合。
+    [15:10]=笔画数(0-63) [9:0]=码点低10位
+    同笔画字高位一致→汉明距离≤10→位锁定概率大幅提升。
     """
     cp = ord(ch)
     sc = min(get_strokes(ch), 63)
-    cp9 = cp & 0x1FF
-    return Gua(((sc << 9) | cp9) & 0xFFFF)
+    cp10 = cp & 0x3FF
+    return Gua(((sc << 10) | cp10) & 0xFFFF)
 
 
 def _tri_encode_v2(ch: str) -> tuple:
@@ -59,10 +58,10 @@ class RenNode:
         self.tau = tau
         self.alive = True
         self.scars: list[dict] = []  # [{target, axes, result}]
-        self.state = '人'           # 天→人→地
+        self.state = 'active'           # anchor→active→result
 
     def bite(self, other: 'RenNode') -> bool:
-        """三轴联合咬合。"""
+        """三轴联合位锁定。"""
         ok_a = _fit_16(self.gA, other.gA) or _fit_16(other.gA, self.gA)
         ok_b = _fit_16(self.gB, other.gB) or _fit_16(other.gB, self.gB)
         ok_c = _fit_16(self.gC, other.gC) or _fit_16(other.gC, self.gC)
@@ -74,46 +73,46 @@ class RenNode:
         self.tau -= 1
 
         if all3:
-            # 坍缩: XOR融合三轴
+            # 归约: XOR融合三轴
             self.gA = Gua(self.gA.value ^ other.gA.value)
             self.gB = Gua(self.gB.value ^ other.gB.value)
             self.gC = Gua(self.gC.value ^ other.gC.value)
-            scar['result'] = '坍缩'
+            scar['result'] = '归约'
             self.alive = False
-            self.state = '地'
+            self.state = 'result'
             return True
 
         if self.tau <= 0:
-            scar['result'] = '湮灭'
+            scar['result'] = '剪枝'
             self.alive = False
-            self.state = '湮'
+            self.state = 'pruned'
             return False
 
-        scar['result'] = '空' if axes == 0 else '半咬'
+        scar['result'] = '零' if axes == 0 else '部分'
         return False
 
     def trace(self) -> str:
         """路径追溯。"""
         parts = []
         for s in self.scars:
-            mark = '!' if s['result'] == '坍缩' else '~' if s['result'] == '半咬' else '.'
+            mark = '!' if s['result'] == '归约' else '~' if s['result'] == '部分' else '.'
             parts.append(f"{s['target']}{mark}")
         return '→'.join(parts) if parts else '-'
 
     def verdict(self) -> str:
         """判决。"""
-        if self.state == '地':
-            return f"坍缩({len(self.scars)}碰)"
-        elif self.state == '湮':
-            return f"湮灭({len(self.scars)}碰)"
+        if self.state == 'result':
+            return f"归约({len(self.scars)}碰)"
+        elif self.state == 'pruned':
+            return f"剪枝({len(self.scars)}碰)"
         return f"悬挂(τ={self.tau})"
 
 
 # ============================================================
 class RenTongzi:
-    """Ren态三轴童子。
+    """三态因果童子。
 
-    学习: 编码→入金字塔→发Ren态→碰撞→坍缩/湮灭→归档
+    学习: 编码→入金字塔→发活性态→碰撞→归约/剪枝→归档
     提问: 编码→在归档中找→输出路径
     """
 
@@ -126,7 +125,7 @@ class RenTongzi:
         self._chars = []
 
     def learn(self, text: str):
-        """喂入文本。天锚→人挂→碰撞→地归档。"""
+        """喂入文本。锚定→活性→全候选最优匹配→归约/剪枝→归档。"""
         nodes = []
         for ch in text:
             if ch not in STROKE_COUNT:
@@ -135,21 +134,61 @@ class RenTongzi:
                 nodes.append(self.archives[ch])
                 continue
 
-            gA, gB, gC = tri_encode(ch)
+            gA, gB, gC = _tri_encode_v2(ch)
             node = RenNode(ch, Gua(gA.value), Gua(gB.value), Gua(gC.value), tau=self.tau)
             nodes.append(node)
             self._chars.append(ch)
 
-        # 碰撞: 每个新节点跟所有已有节点碰
+        # 全候选最优: 每个节点检查所有候选，取最佳位锁定
         for i, ni in enumerate(nodes):
             if not ni.alive:
                 continue
-            for j, nj in enumerate(nodes):
-                if i == j or not nj.alive:
-                    continue
-                ni.bite(nj)
-                if not ni.alive:
+
+            best = None  # (axes, target_node)
+            candidates = [nj for j, nj in enumerate(nodes) if i != j and nj.alive]
+
+            for nj in candidates:
+                ok_a = _fit_16(ni.gA, nj.gA) or _fit_16(nj.gA, ni.gA)
+                ok_b = _fit_16(ni.gB, nj.gB) or _fit_16(nj.gB, ni.gB)
+                ok_c = _fit_16(ni.gC, nj.gC) or _fit_16(nj.gC, ni.gC)
+                axes = sum([ok_a, ok_b, ok_c])
+
+                scar = {'target': nj.ch, 'axes': axes, 'tri': axes == 3,
+                        'A': ok_a, 'B': ok_b, 'C': ok_c}
+                ni.scars.append(scar)
+                ni.tau -= 1
+
+                if axes == 3 and (best is None or axes > best[0]):
+                    best = (axes, nj)
+
+                if ni.tau <= 0:
                     break
+
+            # 归约到最优（如有三轴全锁），否则剪枝/悬挂
+            if best is not None and best[0] == 3:
+                # 记录位锁定——最优疤痕标归约，其余标零/部分
+                for s in ni.scars:
+                    if s.get('result') is None:
+                        s['result'] = '零' if s['axes'] == 0 else '部分'
+                for s in ni.scars:
+                    if s['target'] == best[1].ch and s['tri']:
+                        s['result'] = '归约'
+                        break
+                ni.gA = Gua(ni.gA.value ^ best[1].gA.value)
+                ni.gB = Gua(ni.gB.value ^ best[1].gB.value)
+                ni.gC = Gua(ni.gC.value ^ best[1].gC.value)
+                ni.alive = False
+                ni.state = 'result'
+            elif ni.tau <= 0:
+                for s in ni.scars:
+                    s['result'] = '剪枝' if s.get('result') is None else s['result']
+                ni.alive = False
+                ni.state = 'pruned'
+            else:
+                for s in ni.scars:
+                    if s.get('result') is None:
+                        s['result'] = '零' if s['axes'] == 0 else '部分'
+                ni.state = 'active'
 
         # 入金字塔
         for node in nodes:

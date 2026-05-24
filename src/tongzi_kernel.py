@@ -112,19 +112,35 @@ def _fit(a: Gua, b: Gua) -> bool:
 # ============================================================
 
 class LayerPool:
-    """层内微型池。不独立管理碰撞计数, 只做存储和生子。"""
+    """层内微型池。存储+碰撞+生子。支持标记追踪。"""
     def __init__(self, width: int):
         self.width = width
         self._guas: list[Gua] = []
+        self._tags: dict[int, str] = {}  # id(gua) → tag
 
-    def add(self, g: Gua):
+    def add(self, g: Gua, tag: str = None):
         self._guas.append(g)
+        if tag:
+            self._tags[id(g)] = tag
 
     def find(self, target: Gua) -> list[Gua]:
         return [g for g in self._guas if _fit(target, g)]
 
+    def find_tagged(self, target: Gua) -> list[str]:
+        """找匹配的卦，返回它们的tag列表。"""
+        tags = []
+        for g in self._guas:
+            if _fit(target, g):
+                t = self._tags.get(id(g))
+                if t:
+                    tags.append(t)
+        return tags
+
     def all(self) -> list[Gua]:
         return list(self._guas)
+
+    def tag_of(self, g: Gua) -> str:
+        return self._tags.get(id(g), '')
 
     def __len__(self):
         return len(self._guas)

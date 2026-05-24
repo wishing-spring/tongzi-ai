@@ -29,10 +29,12 @@ def tri_encode(ch: str) -> tuple:
         g = Gua(v)
         return (g, g, g)
 
-    # --- A轴: 笔画 ---
-    sc = min(get_strokes(ch), 127)
-    cp7 = (cp >> 7) & 0x7F
-    a_val = (0 << 14) | (cp7 << 7) | sc
+    # --- A轴: 笔画(高6位) + 码点(低8位) ---
+    # [15:14]=00  [13:8]=笔画数  [7:0]=码点低8位
+    # 同笔画字在A轴自然接近——笔画差1≈汉明距离1-2位
+    sc = min(get_strokes(ch), 63)  # 6 bits
+    cp8 = cp & 0xFF                 # 8 bits
+    a_val = (0 << 14) | (sc << 8) | cp8
 
     # --- B轴: 结构 ---
     st = get_structure(ch)
