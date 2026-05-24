@@ -1,55 +1,93 @@
-# Copyright (c) 2026 Tongzi Project (wishing-spring)
-# Licensed under the MIT License. See LICENSE file for details.
+# -*- coding: utf-8 -*-
 """
-工具 · 编解码
-===============
-文本 ↔ 卦 的所有路径。
+编码器 v2 · 原生区 + 口岸
 
-使用:
-  from tools.encode import encode, batch_encode, text_to_seed
-  g1, g2 = encode("天地"), encode("玄黄")
-  blocks = batch_encode(["天地","玄黄","宇宙"])  # 同锚点, d=2
+16bit 编码:
+  [15:14] script 标记 (2bit) — 0=汉字区 1=拉丁区 2=其他区
+  [13]    保留
+
+汉字区 ([15:14]=00):
+  [12:7]  码点低 6bit (锚定)
+  [6:0]   笔画数 (0-127, 实际 1-64)
+
+拉丁区 ([15:14]=01):
+  [12:7]  码点低 6bit (锚定)
+  [6:0]   码点高 7bit 折叠
+
+其他区 ([15:14]=10):
+  [12:0]  码点低 13bit
 """
-
-from tongzi_constants import VEC_DIM, FULL_MASK, PHI_BITS, PHI_LEN
-from tongzi_kernel import Gua, phi_slice as _phi_slice
-
-def generate_gua(pos: int) -> Gua:
-    return Gua(_phi_slice(pos))
+import sys; sys.path.insert(0, r'C:\Users\45757\Desktop\lingxiAI_v5.0\src')
+from tools.strokes import get_strokes, script_tag
 
 
-def text_to_seed(text: str) -> int:
-    """文本 → φ 起始位置。确定性, 零依赖。"""
-    seed = len(text)
-    for i, c in enumerate(text):
-        seed ^= ord(c) << (i % 8)
-    return seed % PHI_LEN
+def encode(ch: str) -> int:
+    """一字 → 16bit
 
-
-def encode(text: str) -> Gua:
-    """文本 → 卦 (哈希式, 幂等但无语义邻近性)。"""
-    pos = text_to_seed(text)
-    return generate_gua(pos)
-
-
-def batch_encode(texts: list, anchor: int = 0) -> list:
-    """批量编码: 同锚点 XOR 微扰。
-    
-    批内汉明距离 = 2 (精确可控)。
+    汉字: script=00 | 码点低6bit | 笔画数7bit
+    拉丁: script=01 | 码点低6bit | 码点折叠7bit
+    其他: script=10 | 码点低13bit
     """
-    base = generate_gua(anchor)
-    results = []
-    for i, text in enumerate(texts):
-        mask = 1 << (i % VEC_DIM)
-        value = (base.value ^ mask) & FULL_MASK
-        g = Gua(value)
-        results.append(g)
-    return results
+    cp = ord(ch)
+    script = script_tag(ch)
+
+    if script == 0:
+        # 汉字区 — 有笔画解剖
+        cp6 = cp & 0x3F           # 码点低 6bit
+        sc = min(get_strokes(ch), 127)  # 笔画数, 上限 127
+        value = (0 << 14) | (cp6 << 7) | sc
+
+    elif script == 1:
+        # 拉丁区 — 码点折叠
+        cp6 = cp & 0x3F           # 低 6bit
+        cp7 = (cp >> 7) & 0x7F    # 高 7bit
+        value = (1 << 14) | (cp6 << 7) | cp7
+
+    else:
+        # 其他区 — 纯码点
+        value = (2 << 14) | (cp & 0x1FFF)
+
+    return value & 0xFFFF
 
 
-def phi_slice(pos: int, length: int = VEC_DIM) -> int:
-    """直接从 φ 取位, 不生成 Gua。"""
-    bits = PHI_BITS[pos:pos + length]
-    if len(bits) < length:
-        bits += PHI_BITS[:length - len(bits)]
-    return int(bits, 2) & ((1 << length) - 1)
+def batch_encode(text: str) -> list[int]:
+    """逐字编码。"""
+    return [encode(ch) for ch in text]
+
+
+def decode_label(val: int) -> str:
+    """可读标签。"""
+    script = (val >> 14) & 0x3
+    names = {0: '汉字', 1: '拉丁', 2: '其他'}
+    if script == 0:
+        cp = (val >> 7) & 0x3F
+        sc = val & 0x7F
+        return f"汉字 码{cp:02X} 画{sc}"
+    elif script == 1:
+        cp6 = (val >> 7) & 0x3F
+        cp7 = val & 0x7F
+        return f"拉丁 码{cp6:02X}:{cp7:02X}"
+    else:
+        cp13 = val & 0x1FFF
+        return f"其他 码{cp13:04X}"
+
+
+if __name__ == '__main__':
+    # 测试汉字
+    print("汉字区:")
+    for ch in "水河火天地木":
+        v = encode(ch)
+        print(f"  {ch}({get_strokes(ch)}画) → {v:04X} {v:016b}  {decode_label(v)}")
+
+    # 距离
+    print(f"\n汉明距离:")
+    def dist(a, b):
+        return (encode(a) ^ encode(b)).bit_count()
+    for a, b in [('水','河'), ('水','火'), ('水','木'), ('日','月'), ('天','地')]:
+        print(f"  {a}<->{b}: {dist(a,b)} 位")
+
+    # 口岸
+    print(f"\n口岸:")
+    for ch in "aAz9":
+        v = encode(ch)
+        print(f"  {ch} → {v:04X} {decode_label(v)}")

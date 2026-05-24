@@ -34,34 +34,30 @@ class Star:
         # 第1步: 入口塔路由
         r = in_tower.flow(g)
         in_layer = r['入层']
+        in_value = g.value  # 用原始值, 不做重新分类
 
-        # 第2步: 找重叠对应层
-        for up_l, down_l in self.overlap_layers():
-            if from_up and up_l == in_layer:
-                cross_layer = down_l
-                break
-            elif not from_up and down_l == in_layer:
-                cross_layer = up_l
-                break
-        else:
-            cross_layer = in_layer
+        # 第2步: 交叉——在入口层同分辨率碰撞
+        cross_layer = in_layer
+        if cross_layer < self.min:
+            cross_layer = self.min
 
-        # 第3步: 重叠层内榫卯碰撞 (在出口塔的砖上)
+        # 第3步: 重叠层榫卯碰撞——找咬合的砖
         cross_bricks = out_tower.layers[cross_layer].bricks
-        trimmed = Gua(r['入值'].value & ((1 << cross_layer) - 1))
+        trimmed_val = in_value & ((1 << cross_layer) - 1)
+        trimmed = Gua(trimmed_val)
         matches = [b for b in cross_bricks if _fit(trimmed, b)]
 
-        # 第4步: 出口塔归类
+        # 第4步: 直接输出匹配砖
         if matches:
-            mid = matches[len(matches) // 2]
-            out_r = out_tower.flow(mid)
+            best = max(matches, key=lambda b: (b.value ^ trimmed_val).bit_count())
+            out_r = {'出层': cross_layer, '出值': best, '咬合': len(matches)}
         else:
             out_r = {'出层': cross_layer, '出值': trimmed, '咬合': 0}
 
         return {
             '方向': '正->倒' if from_up else '倒->正',
             '入层': r['入层'],
-            '入值': r['入值'],
+            '入值': Gua(in_value),
             '重叠层': cross_layer,
             '交叉咬合': len(matches),
             '出层': out_r['出层'],
