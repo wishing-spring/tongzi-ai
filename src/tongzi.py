@@ -12,7 +12,7 @@ from tools.tri_encode import tri_encode
 from tools.strokes import get_strokes, STROKE_COUNT, script_tag
 from dataclasses import dataclass, field
 
-FIT_MIN = 8     # 位锁定阈值 (32位中>=8位, 等同16位时代>=4的比例)
+FIT_MIN = 9     # 位锁定阈值 (弹珠机最佳阈值)
 TAU = 5         # 活性窗口
 
 
@@ -20,31 +20,26 @@ TAU = 5         # 活性窗口
 # 编码器 — 32位
 # ============================================================
 
+# 弹珠机16柱 — 三组不同柱阵 = 三个独立证人
+_PINS_A = [(i*2654435761^(i+1)*16777619)&0xFFFFFFFF for i in range(16)]
+_PINS_B = [((i*7919)**2 % 0xFFFFFFFF) for i in range(16)]
+_PINS_C = [((1<<(i%7))*((i+1)*7901))&0xFFFFFFFF for i in range(16)]
+
+def _pinball(cp, pins) -> int:
+    v = cp
+    for i in range(16):
+        if cp & (1 << i):
+            v ^= pins[i]
+    return (v | (v << 16)) & FULL_MASK
+
 def _encode_A32(ch: str) -> Gua:
-    """A轴: 保距投影——码点 XOR 移位折叠到32位。"""
-    cp = ord(ch)
-    # XOR错位: 高11位 ^ 低21位, 无损保距
-    hi = cp >> 11
-    lo = cp & 0x7FF
-    folded = (hi ^ lo) & 0x7FF
-    v = (cp << 11) | folded  # 码点占高21位, 折叠占低11位
-    return Gua(v & FULL_MASK)
+    return Gua(_pinball(ord(ch), _PINS_A))
 
 def _encode_B32(ch: str) -> Gua:
-    """B轴: 旋转投影——码点循环左移5位。"""
-    cp = ord(ch)
-    rotated = ((cp << 5) | (cp >> 16)) & 0x1FFFFF  # 21位旋转
-    # 高位重复填充到32位
-    v = rotated | (rotated << 10)
-    return Gua(v & FULL_MASK)
+    return Gua(_pinball(ord(ch), _PINS_B))
 
 def _encode_C32(ch: str) -> Gua:
-    """C轴: Gray码变换——相邻码点仅差1位, 结构保距。"""
-    cp = ord(ch)
-    gray = cp ^ (cp >> 1)  # 标准Gray码
-    # 镜像填充到32位
-    v = gray | (gray << 11)
-    return Gua(v & FULL_MASK)
+    return Gua(_pinball(ord(ch), _PINS_C))
 
 def _tri_encode32(ch: str) -> tuple:
     """一字→(G_A, G_B, G_C) 三个独立保距投影。"""
