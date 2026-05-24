@@ -44,7 +44,7 @@ class Gua:
 
 def yao(g: Gua) -> list:
     """拆卦为爻。"""
-    return [(g.value >> (15 - i)) & 1 for i in range(16)]
+    return [(g.value >> (VEC_DIM - 1 - i)) & 1 for i in range(VEC_DIM)]
 
 
 def form(g: Gua, w: int = 8) -> str:
@@ -178,7 +178,7 @@ class Pyramid:
     底(8爻) → 精辨
     """
 
-    def __init__(self, min_width: int = 2, max_width: int = 8):
+    def __init__(self, min_width: int = 2, max_width: int = 10):
         self.layers: dict[int, Layer] = {}
         for w in range(min_width, max_width + 1):
             self.layers[w] = Layer(w)
