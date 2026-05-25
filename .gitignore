@@ -6,6 +6,9 @@ AGENTS.md
 SOUL.md
 HEARTBEAT.md
 
+# Generated data
+data/
+
 # Temp files
 *.png
 src/_quick_test.py

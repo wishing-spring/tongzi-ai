@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""童子 v3.0 · 统一系统"""
+"""Tongzi v3.0 — Unified system: surge pool + multiple eco pools."""
 
 from collections import Counter
 from typing import List
@@ -10,7 +10,7 @@ from .constants import SUITS
 
 
 class TongziV3:
-    """涌动池 + 多生态池。"""
+    """Surge pool + multiple eco pools, each with different rules."""
 
     def __init__(self):
         self.surge = SurgePool()
@@ -24,19 +24,18 @@ class TongziV3:
         return self.surge.ingest(text)
 
     def tick(self, n: int = 1):
-        """驱动一轮。每个生态池: 拉卦→碰撞→生子回流涌动池。"""
+        """Drive N ticks. Each eco pool: pull → collide → flowback to surge."""
         for _ in range(n):
             self.global_tick += 1
             for ep in self.eco:
                 ep.pull(self.surge, self.global_tick)
                 ep.tick(self.global_tick)
-                # 生子回流
                 for c in ep.births:
                     self.surge.accept(c)
                 ep.births.clear()
 
     def report(self) -> str:
-        L = [f"═══ 童子 v3.0 tick={self.global_tick} ═══",
+        L = [f"=== Tongzi v3.0 tick={self.global_tick} ===",
              self.surge.stats()]
         for ep in self.eco:
             L.append(ep.stats())
@@ -46,8 +45,8 @@ class TongziV3:
             sol = [g for g in ep.guas if ep._is_solid(g)]
             if sol:
                 names = Counter(express(g, natives) for g in sol)
-                L.append(f"\n{ep.name} 吸引子:")
+                L.append(f"\n{ep.name} attractors:")
                 for name, cnt in names.most_common(5):
-                    L.append(f"  {name:4s} {'█' * min(cnt, 40)} {cnt}")
+                    L.append(f"  {name:4s} {'#' * min(cnt, 40)} {cnt}")
 
         return '\n'.join(L)

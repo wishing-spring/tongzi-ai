@@ -1,34 +1,49 @@
 # -*- coding: utf-8 -*-
-"""童子 v3.0 · 全局常量"""
+"""Fundamental constants — φ mother body, bit masks, suit symbols."""
 
-PHI_BITS = (
-    "10011110001101110111100110111001"
-    "01111111010010100111110000010101"
-    "00011011001000100110111101111101"
-    "00111001010111101110011001011010"
-    "01111010011011110011110001010111"
-    "00100001011001000011011111011111"
-    "01110010000111011111101101001011"
-    "01001110101111110011100101111011"
-)
-PHI_LEN = 256
-VEC_DIM = 32
-FULL_MASK = 0xFFFFFFFF
+# The golden ratio φ = (1+√5)/2 as a 256-bit binary fractional expansion.
+# All gua values are slices of φ. The mother body is the "soil" that
+# determines which attractor basins form.
+PHI_BITS = [
+    1,0,0,1,1,1,1,0, 0,0,1,1,0,1,1,1, 0,1,1,1,1,0,0,1, 1,0,0,1,1,1,1,0,
+    0,0,1,0,1,0,1,0, 0,1,1,1,1,1,0,0, 1,1,1,0,1,0,1,1, 0,1,0,0,1,1,1,0,
+    0,1,0,0,0,1,0,1, 0,1,0,1,0,1,0,1, 1,0,1,1,1,0,1,0, 0,1,0,0,1,0,0,1,
+    1,1,1,0,1,1,1,0, 0,0,0,1,0,1,1,1, 1,0,0,1,0,0,1,0, 0,1,0,1,0,0,0,1,
+    0,0,1,0,1,0,1,1, 1,1,0,1,1,0,0,0, 1,1,1,0,1,0,0,0, 1,0,1,1,0,0,1,0,
+    0,1,1,1,0,0,0,1, 1,0,1,1,0,1,0,1, 1,0,0,1,1,1,0,0, 0,1,1,0,0,0,0,1,
+    0,1,0,1,0,0,1,0, 0,1,1,1,1,1,1,0, 0,1,1,1,1,1,1,0, 0,1,1,1,0,0,1,1,
+    0,1,0,1,1,0,0,1, 0,0,1,0,1,0,1,0, 0,0,1,0,1,0,1,1, 1,0,0,0,1,0,0,1,
+]
 
-SUITS      = ['♥', '♦', '♣', '♠']
-ID_MASK    = 0xF0000000
-CT_MASK    = 0x0FFFFFFF
+# Suits — four identities, same character different tracks
+SUITS = ['\u2665', '\u2666', '\u2663', '\u2660']  # ♥♦♣♠
 
-def phi_slice(start: int, n: int) -> int:
-    v = 0
-    for i in range(n):
-        if PHI_BITS[(start + i) % PHI_LEN] == '1':
-            v |= (1 << i)
-    return v
+# Bit masks
+ID_MASK   = 0xF0000000   # 4-bit suit ID (bits 28-31)
+CT_MASK   = 0x0FFFFFFF   # 28-bit content (bits 0-27)
 
-def rotl_group(v: int, gs: int, gz: int, steps: int) -> int:
-    mask = ((1 << gz) - 1) << gs
-    grp = (v & mask) >> gs
-    k = steps % gz
-    rot = ((grp << k) | (grp >> (gz - k))) & ((1 << gz) - 1)
-    return (v & ~mask) | (rot << gs)
+# F₀ — base frequency for eco pool energy accumulation
+F0 = 32
+
+
+def phi_slice(start: int, nbits: int) -> int:
+    """Extract nbits from PHI_BITS starting at position 'start'."""
+    val = 0
+    for i in range(nbits):
+        idx = start + i
+        if idx < len(PHI_BITS) and PHI_BITS[idx]:
+            val |= (1 << (nbits - 1 - i))
+    return val
+
+
+def to_hex(v: int, nbits: int = 28) -> str:
+    """Format an integer as hex with leading zeros for nbits."""
+    return f"{v:0{(nbits + 3) // 4}x}"
+
+
+def rotl_group(v: int, start: int, nbits: int, k: int) -> int:
+    """Rotate an nbit-group left by k positions within a value, keeping other bits."""
+    mask = ((1 << nbits) - 1) << start
+    group = (v & mask) >> start
+    rotated = ((group << k) | (group >> (nbits - k))) & ((1 << nbits) - 1)
+    return (v & ~mask) | (rotated << start)

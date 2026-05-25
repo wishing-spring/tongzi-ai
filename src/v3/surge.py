@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
-"""涌動 — F₂等效灵犀八卦盘旋转"""
+"""Surge — F₂ equivalent of the I Ching disc rotation.
+
+The "surge" mechanism mimics the rotation of the 64-hexagram disc:
+instead of rotating the hexagrams themselves, a 16-bit matching window
+slides across the 28-bit F₂ space. Same pair of gua, different window
+positions → different matching bits → continuous new collisions.
+"""
 
 from .constants import phi_slice, CT_MASK, rotl_group
 
-SURGE_CYCLE = 3  # 每 N tick 一涌動相
-WINDOW_BITS = 16  # 匹配窗口大小(28位中选16)
+SURGE_CYCLE = 3   # ticks per surge phase
+WINDOW_BITS = 16  # matching window size (16 of 28 bits)
 
-# 四花色涌動速率
+
+# Per-suit rotation rates for birth-signature surge
 _RATES = {
     0: [1, 3, 5, 7],
     1: [2, 5, 7, 11],
@@ -14,14 +21,15 @@ _RATES = {
     3: [5, 11, 13, 17],
 }
 
-_BASE_MASK = ((1 << WINDOW_BITS) - 1) << 0  # 低14位窗口
+_BASE_MASK = ((1 << WINDOW_BITS) - 1) << 0
 
 
 def surge_mask(tick: int) -> int:
-    """涌動窗口掩码 — 每相旋转，只匹配窗口内比特。
+    """Surge window mask — rotates every phase, only matching bits in-window.
 
-    灵犀等效: 八卦盘旋转 = 匹配窗口在F₂空间滑动。
-    同对卦在不同涌動相看不同比特 → 持续产生新匹配。
+    Each phase slides the 16-bit window by 3 bits (10 phases = full cycle).
+    The mask is ANDed with XOR results to determine which bit positions
+    contribute to the current collision match.
     """
     phase = tick // SURGE_CYCLE
     shift = (phase * 3) % 28
@@ -30,7 +38,12 @@ def surge_mask(tick: int) -> int:
 
 
 def surge(v: int, tick: int) -> int:
-    """涌動变换 — 用于生子时注入涌動签名。"""
+    """Surge transform — injects a surge signature during birth.
+
+    Each suit has different rotation rates. The phase-dependent weather
+    (φ-slice XOR) ensures the same gua pair produces different children
+    at different surge phases.
+    """
     phase = tick // SURGE_CYCLE
     sid = (v >> 28) & 0xF
     rates = _RATES.get(sid, [1, 3, 5, 7])

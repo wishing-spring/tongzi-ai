@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""生态池 — 碰撞生子固化剪枝。不同规则，不同生态。"""
+"""Eco Pool — where gua collide, give birth, solidify, get pruned.
+
+Each eco pool has its own rules (birth rate, fit threshold, solidification,
+anti-entropy). Multiple pools with different rules = ecological diversity.
+"""
 
 from typing import List
 from .gua import Gua
@@ -7,12 +11,12 @@ from .constants import ID_MASK, CT_MASK
 from .surge import surge_mask
 from .antientropy import AntiEntropy
 
-F0 = 48            # 降低门槛让子卦更快参与
+F0 = 48
 FIT_MIN_DEFAULT = 6
 
 
 class EcoPool:
-    """生态池。每池独立能量/碰撞/固化状态。"""
+    """Ecological pool. Each pool has independent energy/hit/solid state."""
 
     def __init__(self, name: str, *,
                  tau: int = 5,
@@ -23,24 +27,25 @@ class EcoPool:
                  stagnation_window: int = 5,
                  jitter_bits: int = 3):
         self.name = name
-        self.tau = tau
-        self.fit_min = fit_min
-        self.birth_rate = birth_rate
-        self.flow_back = flow_back
-        self.density_max = density_max
+        self.tau = tau                    # age threshold for culling
+        self.fit_min = fit_min            # minimum Hamming fit for collision
+        self.birth_rate = birth_rate      # energy gained per tick
+        self.flow_back = flow_back        # send children back to surge pool
+        self.density_max = density_max    # max non-native active gua
 
         self.guas: List[Gua] = []
-        self.births: List[Gua] = []
+        self.births: List[Gua] = []       # pending flowback
         self.total_births = 0
         self.total_solid = 0
         self.tick_count = 0
         self.antientropy = AntiEntropy(stagnation_window, jitter_bits)
 
-        # 池本地状态 (不污染共享卦元)
-        self._energy: dict[int, int] = {}   # id(g) → energy
-        self._hits: dict[int, int] = {}     # id(g) → hit_count
-        self._solid: set = set()            # id(g) of solidified
+        # Pool-local state (does not mutate shared Gua objects)
+        self._energy: dict[int, int] = {}  # id(g) → energy
+        self._hits: dict[int, int] = {}    # id(g) → collision count
+        self._solid: set = set()           # id(g) of solidified gua
 
+    # --- private helpers ---
     def _energy_of(self, g: Gua) -> int:
         return self._energy.get(id(g), 0)
     def _set_energy(self, g: Gua, v: int):
@@ -56,6 +61,7 @@ class EcoPool:
         self._solid.add(id(g))
 
     def pull(self, surge_pool, global_tick: int):
+        """Pull gua from the surge pool into this eco pool."""
         existing = {id(g) for g in self.guas}
         for g in surge_pool.all():
             if len(self.guas) >= self.density_max * 5:
@@ -66,13 +72,14 @@ class EcoPool:
                 existing.add(id(g))
 
     def tick(self, global_tick: int):
+        """One heartbeat: accumulate energy, collide, birth, solidify, cull."""
         self.tick_count += 1
         self.births.clear()
         births_this: List[Gua] = []
 
         alive = [g for g in self.guas if not self._is_solid(g)]
 
-        # 1. 频率累积
+        # 1. Energy accumulation
         en = int(12 * self.birth_rate)
         for g in alive:
             if self.birth_rate > 0:
@@ -82,9 +89,11 @@ class EcoPool:
             self._cull()
             return
 
-        # 2. 碰撞 — 涌動只作用于一方(非对称偏转)
+        # 2. Collision — XOR + AND across the surge window
         active = [g for g in alive if self._energy_of(g) >= F0]
         locked = set()
+
+        mask = surge_mask(global_tick)
 
         for i, a in enumerate(active):
             if self._is_solid(a):
@@ -92,12 +101,11 @@ class EcoPool:
             for j, b in enumerate(active):
                 if i >= j or self._is_solid(b):
                     continue
-                pk = (id(a), id(b)) if id(a) < id(b) else (id(b), id(a))
+                pk = (min(id(a), id(b)), max(id(a), id(b)))
                 if pk in locked:
                     continue
 
-                # 涌動窗口: 只匹配涌動相选中的比特段
-                mask = surge_mask(global_tick)
+                # Asymmetric fit: each direction checked independently
                 fab = ((a.ct & mask) & ~(b.ct & mask)).bit_count()
                 fba = ((b.ct & mask) & ~(a.ct & mask)).bit_count()
                 if max(fab, fba) < self.fit_min:
@@ -109,7 +117,7 @@ class EcoPool:
                 self._inc_hit(b)
                 locked.add(pk)
 
-                # 生子 — 裸XOR,涌動不污染子卦
+                # Birth — bare XOR/AND, surge does NOT contaminate children
                 xc = (a.ct ^ b.ct) & CT_MASK
                 ac = (a.ct & b.ct) & CT_MASK
 
@@ -121,20 +129,20 @@ class EcoPool:
                 self._set_energy(ca, F0 // 2)
                 births_this.extend([cx, ca])
 
-        # 3. 子卦入池
+        # 3. Admit children
         for c in births_this:
             self.guas.append(c)
             self.total_births += 1
             if self.flow_back:
                 self.births.append(c)
 
-        # 4. 固化
+        # 4. Solidification — 3+ hits → irreversible memory
         for g in self.guas:
             if not self._is_solid(g) and self._hit_of(g) >= 3:
                 self._make_solid(g)
                 self.total_solid += 1
 
-        # 5. 剪枝 (只剪无生子)
+        # 5. Prune — remove barren non-native gua
         dead = [g for g in self.guas
                 if not g.is_native and not self._is_solid(g)
                 and self._hit_of(g) == 0
@@ -144,13 +152,13 @@ class EcoPool:
             self._energy.pop(id(g), None)
             self._hits.pop(id(g), None)
 
-        # 6. 密度
+        # 6. Density control
         self._cull()
 
-        # 7. 反熵 — 僵化检测 + φ扰动注入
+        # 7. Anti-entropy — detect stagnation, inject φ-guided jitter
         if self.birth_rate > 0 and self.antientropy.check(self.total_births):
             jittered = 0
-            # 优先: 子卦非固化 → 创建新卦(不改原值,避免key冲突)
+            # Priority 1: non-native, non-solid children (safest to jitter)
             for g in self.guas:
                 if not g.is_native and not self._is_solid(g):
                     new_ct = self.antientropy.jitter(g.ct, global_tick)
@@ -161,7 +169,7 @@ class EcoPool:
                     jittered += 1
                     if jittered >= 5:
                         break
-            # 其次: 固化卦(唤醒)
+            # Priority 2: wake solidified gua (un-solidify + jitter)
             if jittered == 0:
                 for g in self.guas:
                     if self._is_solid(g):
@@ -174,7 +182,7 @@ class EcoPool:
                         jittered += 1
                         if jittered >= 3:
                             break
-            # 最后: 原生卦(微调)
+            # Priority 3: native gua (last resort, minimal jitter)
             if jittered == 0:
                 from random import sample
                 targets = [g for g in self.guas if g.is_native]
@@ -187,7 +195,8 @@ class EcoPool:
                     jittered += 1
 
     def _cull(self):
-        # 总卦数上限
+        """Density control — remove low-energy non-native gua when crowded."""
+        # Hard cap
         while len(self.guas) > self.density_max * 8:
             victim = None
             for g in self.guas:
@@ -200,6 +209,7 @@ class EcoPool:
             self._energy.pop(id(victim), None)
             self._hits.pop(id(victim), None)
 
+        # Soft cap — remove lowest-energy non-native
         ns = [g for g in self.guas
               if not g.is_native and not self._is_solid(g)]
         if len(ns) > self.density_max:
@@ -213,5 +223,5 @@ class EcoPool:
     def stats(self) -> str:
         al = sum(1 for g in self.guas if not self._is_solid(g))
         sl = sum(1 for g in self.guas if self._is_solid(g))
-        return (f"{self.name} {len(self.guas)}卦 "
+        return (f"{self.name} {len(self.guas)} gua "
                 f"alive={al} solid={sl} births={self.total_births}")
