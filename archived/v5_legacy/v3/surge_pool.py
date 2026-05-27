@@ -50,7 +50,8 @@ class SurgePool:
         if len(self.order) >= self.MAX_SURGE:
             for i, g in enumerate(self.order):
                 if not g.is_native:
-                    del self._map[g.value]
+                    if g.value in self._map:
+                        del self._map[g.value]
                     self.order.pop(i)
                     break
             else:
@@ -61,6 +62,13 @@ class SurgePool:
 
     def all(self) -> List[Gua]:
         return list(self.order)
+
+    def _ingest_raw(self, g: Gua):
+        """持久化恢复: 直接插入卦"""
+        if g.value in self._map:
+            return  # 跳过重复
+        self._map[g.value] = g
+        self.order.append(g)
 
     def __len__(self):
         return len(self.order)

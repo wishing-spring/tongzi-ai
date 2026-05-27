@@ -60,6 +60,14 @@ class EcoPool:
     def _make_solid(self, g: Gua):
         self._solid.add(id(g))
 
+    def _ingest_raw(self, g: Gua, energy: int, hit: int, solid: bool):
+        """持久化恢复: 直接插入带状态的卦"""
+        self.guas.append(g)
+        self._energy[id(g)] = energy
+        self._hits[id(g)] = hit
+        if solid:
+            self._solid.add(id(g))
+
     def pull(self, surge_pool, global_tick: int):
         """Pull gua from the surge pool into this eco pool."""
         existing = {id(g) for g in self.guas}

@@ -1,90 +1,95 @@
-# Tongzi · F₂ Collision Engine
+# 童灵 v6.0 — F₂卦元离散动力系统
 
-**An alternative AI substrate built on pure F₂ space (GF(2) XOR/AND collisions).**
+基于纯F₂域（GF(2)）运算的离散动力系统。无浮点、无矩阵、无梯度、无词嵌入。28位卦元(GuaYuan)作为统一原子载体，通过XOR碰撞、Hamming距离跃迁、位统计操作实现五层动力学架构与三界管理层。
 
-Not an LLM. Not a neural network. Not a token predictor.
+**输入→童子F₂闭壳碰撞→attractor→灵犀五层→657词F₂原生输出**
 
-Zero floats · Zero matrices · Zero gradients · Zero embeddings · Zero attention · Zero external deps
+## 架构
 
----
+```
+输入文字 → [童子F₂池] XOR碰撞·四生态池·连环咬合编码
+                ↓ attractor (28位卦元)
+         [灵犀五层]
+         L1 阴阳对池 (128卦元互易·coherence)
+         L2 世界字团 (1024卦元·三态·做梦·扩散)
+         Φ场 脉络   (Hebbian连接·BFS·衰减)
+         L3 八卦环   (64参考码·Hamming跃迁·Lightning链)
+         L5 定心坠子 (5维价值门控·双画像)
+         L5 YongJiu  (游离卦元·三才检测·双井势·场骤冷)
+                ↓
+         [货柜] body·ghost·ctx 三卦元
+                ↓
+         [词世界] 657词F₂哈希·XOR链式跳→输出
+                
+         [三界天庭] 天界七官·地界三司
+         玉帝·总管 王母·生息 太上·观察 雷部·应急
+         紫微·轨迹 太岁·节律 财部·调度
+         阎罗·裁断 无常·回收 孟婆·清理
+```
 
-## Quick Start
+## 运行
 
 ```bash
-git clone https://github.com/wishing-spring/tongzi-ai.git
-cd tongzi-ai
-python demo.py
+cd src/lingxi_v6
+python demo.py      # 六步全链路演示 + 持久化
+python chat.py       # 交互对话 (输入'天庭'查看管理层)
 ```
 
-`pip install nothing`.
+**依赖**: Python 3.8+（仅标准库，零外部依赖）
 
----
+## 核心特征
 
-## Core Mechanism
-
-```
-Chinese chars → 4-suit pinball encode → 80 × 28-bit F₂ vectors
-  ↓
-Surge Pool (XOR/AND collision + sliding window + anti-entropy jitter)
-  ↓
-Eco Pool (birth → solidify → attractor emergence)
-```
-
-300 ticks, ~380k XOR/AND collisions. 20 chars → 20 distinguishable attractor clusters.
-
----
-
-## Code
-
-```
-src/
-├── v3/           F₂ Collision Engine (zero deps)
-│   ├── encode.py       Four-suit pinball encoding
-│   ├── constants.py    φ mother body, bit masks
-│   ├── gua.py          Gua (F₂ point)
-│   ├── surge.py        Surge sliding window
-│   ├── surge_pool.py   Eternal pool
-│   ├── eco_pool.py     Eco pool + anti-entropy
-│   └── express.py      Nearest-neighbor expression
-└── v4/           Self-model layer (tianyuan, spine, fold, gravity, causal)
-```
-
-| Iron Rules |
-|:--|
-| Zero floats · Zero matrix multiplication · Zero gradient descent |
-| Zero embeddings · Zero attention · Zero autoregression |
-| Zero external dependencies · Pure Python · Pure bitwise operations |
-
----
-
-## Honest Disclosure
-
-**F₂ collisions produce 28-bit vectors and attractor distributions.**
-
-The mapping from bit vectors to natural language currently uses a template bridge (`speak.py`). This is not F₂-native generation. We document this honestly — we don't pretend F₂ produces Chinese text.
-
-What's real: without any floating point, matrices, or gradients, F₂ collision dynamics produce distinguishable input-to-attractor mappings.
-
----
-
-## Experiments
-
-[experiments/](experiments/) — v1 attractor verification, v2 32-bit expansion, density parameter scans
-
----
-
-## Version History
-
-| Tag | Milestone |
+| 特征 | 实现 |
 |:--|:--|
-| v0.5 | Loom weaver + Balancer + Responder |
-| v1.2 | Four axioms + φ mother + 8 operations + attractor verification |
-| v2.3 | 32-bit pinball encoding + tri-axis TMR + radical checkpoint |
-| **v3.0** | **Surge eternal pool + eco birth pools + anti-entropy** |
-| **v4.0** | **Dual tianyuan · spine memory · fold · gravity · causal probe** |
+| 运算域 | F₂ (GF(2))，28位封闭空间 |
+| 载体 | 28位卦元 — 童子尊碰撞，灵犀尊归属，统一格式天然桥接 |
+| 编码 | 连环咬合哈希 (chain-linked hashing) |
+| 碰撞 | XOR位运算，mask动力学 |
+| 距离 | Hamming距离 (bit_count) |
+| 学习 | Hebbian连接强化 (Φ场) |
+| 记忆 | 长期(累积XOR)+短期(最近5轮)+逻辑骨架(8种关系) |
+| 管理 | 三级共治·季节轮回·冷却防震荡·无为锚点 |
+| 数值 | 零浮点·零矩阵·零梯度·零词嵌入·零外部知识库 |
 
-Older docs → [archive/](archive/)
+## 关键数据
 
----
+- 1500 tick持续运行，无坍缩
+- 生态池固化率100% (hits≥3)
+- YongJiu触发率~33%，骤冷率~11%
+- Φ场连接：39→229→164 (增长后稳定)
+- 四季轮回：春生→夏长→秋收→冬藏，每250tick
 
-MIT © 2026 [wishing-spring](https://github.com/wishing-spring)
+## 已知局限
+
+1. **输出非语义** — F₂原生词链跳输出为字词序列（如"壁·河流·北·燥·下降·元"），非自然语言生成。这是F₂域的物理约束：XOR+Hamming不能产生新的语义组合。
+
+2. **无增量学习** — Φ场Hebbian机制仅强化共现连接。系统跑1000 tick和跑10000 tick的结构复杂度增长率趋近于零。
+
+3. **参数经验性** — 所有阈值（L_threshold=0.35、harvest_cycle=100、season=250）均来自试运行调优，无理论推导。
+
+4. **词空间有限** — 657词F₂哈希空间。XOR链跳在低基数词表上存在吸引子坍缩风险。
+
+5. **非通用系统** — 当前为封闭域动力学原型，未接入外部数据或API。不能替代LLM或用于生产任务。
+
+## 文件
+
+```
+src/lingxi_v6/
+├── guayuan.py              # 卦元基础设施 (28位·XOR·Hamming·hash)
+├── tongzi_f2.py            # 童子F₂闭壳碰撞池 (涌·四生态)
+├── l1_yinyang.py           # L1 阴阳对池 (互易·coherence)
+├── l2_world.py             # L2 世界字团 (三态·做梦·扩散)
+├── l3_bagua.py             # L3 八卦环 (64卦·Hamming跃迁·Lightning)
+├── l4_phi.py               # Φ场脉络 (Hebbian·BFS·衰减)
+├── l5_dingxin_yongjiu.py   # 定心坠子(5值门控) + YongJiu(游离探针)
+├── lingxi_fusion.py        # 货柜·全层融合·持久化
+├── word_world.py           # F₂原生词世界 (657词哈希·XOR链跳)
+├── tian_tian.py            # 三界天庭管理层 (十官十职)
+├── demo.py                 # 全链路演示 (6步·save/load)
+├── chat.py                 # 交互对话
+└── __init__.py
+```
+
+## 许可
+
+MIT License
