@@ -1,82 +1,144 @@
-# Lingxi v8.3 — Discrete Structure Reducer
+# Tongzi (童子) v8.3
 
-**Zero training. Zero gradient. Bit-level auditable. Pure F₂ operations.**
+**A Zero-Gradient Symbolic Reasoning System**
 
-A 28-bit artificial life system with child persona (age 10), self-growth,
-dreaming engine, personality filter, and semantic co-occurrence learning.
+---
 
-## Quick Start
+## What This Is
 
-```python
-import lingxi
-lingxi.demo()   # run evidence experiments
-lingxi.start()  # interactive session (GUI if available)
-```
+Tongzi is a symbolic reduction and rule-based reasoning system operating on F₂ (binary field) vectors. Its technical classification: a Discrete Symbolic Reducer — a rule-driven inference system, not a statistical learning or neural network system.
 
-Or from the command line:
+All operations are limited to XOR, Hamming distance, and bit_count. No floating-point arithmetic, matrix multiplication, gradient computation, word embeddings, or external knowledge bases are used. ~172 KB of code, 13 core modules, Python 3.8+ standard library only. Zero additional dependencies.
 
-```bash
-pip install .        # zero external dependencies
-python -c "import lingxi; lingxi.demo()"
-```
+---
+
+## Core Constraints
+
+| Constraint | Description |
+|:--|:--|
+| Zero floats | All computation in integer domain |
+| Zero matrices | No matrix multiplication |
+| Zero gradients | No backpropagation or parameter optimization |
+| Zero embeddings | No pretrained word vectors |
+| Zero dependencies | Python 3.8 standard library only |
+
+---
 
 ## Architecture
 
-| Layer | Component | Operations |
-|:------|:----------|:-----------|
-| Bit-Vector | `guayuan` | 28-bit XOR, Hamming distance, radical-Gray encoding |
-| Oscillation | `yinyang` | Yin-yang heartbeat drives world-layer evolution |
-| World | `shared_pool` | 195 active stars, 13 clusters, 414 co-occurrence edges |
-| Rules | `rule_tree` | 106 rules, direct substring matching, self-growth via crystallization |
-| Inference | `bagua_core` | 64-cell think-chain engine with shortest-path reasoning |
-| Personality | `tongzi_experience` | 10-year-old filter: 7 allow / 4 block rules |
-| Output | `child_window` / `live_child` | Tkinter GUI or terminal interactive mode |
+Seven layers, bottom to top:
 
-## Evidence Experiments
+### 1. Vector Layer (guayuan.py)
 
-Three controlled experiments demonstrating system properties:
+28-bit binary vectors form the system's fundamental data structure. All information — input characters, rules, vector clusters, memory — is represented and operated on as 28-bit vectors.
 
-1. **Refuse-to-Answer**: forbidden input reduces to ANNIHILATE
-2. **Separation**: similar characters map to distinct rule paths
-3. **Self-Growth**: repeated collision triggers rule crystallization
+Character-to-vector mapping uses radical Gray encoding: Unicode radical ordering builds Gray codes so that characters sharing radicals are close in Hamming space. Example: characters under the "水" (water) radical (江, 河, 海, 湖) have an average pairwise Hamming distance of ~0.76.
+
+Core operations: XOR, Hamming distance, bit_count.
+
+### 2. Oscillation Scheduler (yinyang.py)
+
+Fixed-interval oscillation signal drives periodic updates to the world state layer. Each tick triggers vector collisions, energy flow, and state transitions.
+
+### 3. World State Layer (shared_pool.py)
+
+Shared vector pool. Current scale: 195 active vectors, 13 vector clusters (grouped by radical and co-occurrence), 414 co-occurrence edges (character-to-character associations built automatically from dialogue).
+
+### 4. Rule Layer (rule_tree.py)
+
+106 rules across 16 categories. Rule matching uses direct substring matching: if an input character appears in a rule's refs list, the rule fires.
+
+Self-growth support: when a collision pattern recurs ≥3 times, the system automatically crystallizes it into a new rule under the HARVESTED category.
+
+### 5. Inference Layer (bagua_core.py)
+
+64-cell inference grid. After rule matching, the system performs shortest-path traversal through the cell network, producing a cell-path sequence as the inference chain.
+
+### 6. Cognitive Boundary Layer (tongzi_experience.py)
+
+Cognitive boundary filter. Defines the cognitive scope of a 10-year-old child: 7 allowed domains (play, nature, animals, drawing, food, family, curiosity) and 4 blocked domains (violence, social dismissiveness, negative emotions, adult content — recognized but not affirmatively answered).
+
+Positioned mid-chain: full-perspective inference (64-cell unconstrained traversal) → cognitive boundary filter (retains only what a 10-year-old can comprehend) → constrained-perspective inference (further traversal from the filtered scope).
+
+### 7. Output Layer (child_window.py / live_child.py)
+
+Converts cell-path and inference chain data into natural language output. Two modes: Tkinter GUI window and terminal interactive. Output voice is uniformly that of a 10-year-old child.
+
+---
+
+## Quick Start
 
 ```bash
-python demo_evidence.py
+pip install .                                         # zero additional dependencies
+python -c "import lingxi; lingxi.demo()"              # run 3 evidence experiments
+python -c "import lingxi; lingxi.start()"             # interactive session
 ```
 
-## System Properties
+---
 
-| Property | Value |
-|:---------|:------|
-| Vector width | 28 bits |
-| Operations | XOR, Hamming, bit_count |
-| Floating-point | None (zero) |
-| Gradients | None (zero) |
-| Word embeddings | None (zero) |
-| External knowledge | None (zero) |
-| Dependencies | Python 3.8+ standard library only |
-| Active entities | 195 stars, 13 clusters, 106 rules |
-| Personality | 10-year-old child, 7 allow / 4 block |
-
-## Files
+## File Layout
 
 ```
 lingxi/
-  __init__.py           Package entry: start(), demo()
-  guayuan.py            Bit-vector core (28-bit XOR/Hamming)
-  yinyang.py            Yin-yang oscillation engine
-  shared_pool.py        Shared world-layer pool
-  rule_tree.py          Rule match tree (106 rules)
-  semantic_anchors.py   Per-unit cell mapping (0-63)
-  bagua_core.py         Inference think-chain engine
+  __init__.py           Entry: start(), demo()
+  guayuan.py            28-bit binary vector core
+  yinyang.py            Oscillation scheduler
+  shared_pool.py        World state shared pool
+  rule_tree.py          Rule tree (106 rules)
+  semantic_anchors.py   64-cell mapping
+  bagua_core.py         Inference grid engine
   bagua_layer.py        Rotating inference grid
-  tongzi_experience.py  Child experience pool + personality filter
-  lingxi_fusion.py      Full-layer orchestration core
-  child_window.py       Tkinter GUI interface
-  live_child.py         Terminal interactive mode
+  tongzi_experience.py  Cognitive boundary filter & experience pool
+  lingxi_fusion.py      Full-layer orchestration
+  child_window.py       Tkinter GUI
+  live_child.py         Terminal interactive
   demo_evidence.py      Evidence experiments
   trace.py              Execution trace / audit
 ```
+
+---
+
+## Three Evidence Experiments
+
+**Experiment 1: Refusal.** Blocked-domain input → ANNIHILATE, no affirmative response.
+
+**Experiment 2: Separation.** Same-radical, different-meaning characters → distinct rule paths.
+
+**Experiment 3: Self-Growth.** Repeatedly submit similar input → collision crystallization, new rule auto-generated.
+
+---
+
+## Known Limitations
+
+**Substring matching does not imply semantic understanding.** Rule firing is based on keyword string matching. "打" hits a rule because the character is in its refs list — the system does not distinguish "打水" (fetch water) from "打架" (fight).
+
+**Output layer is template-bridged.** The inference chain produces cell-path data, which is converted to natural language through hand-written templates. Output is not directly generated from vector operations.
+
+**Single-character matching lacks context differentiation.** "好" in "你好" (hello), "好累" (so tired), and "好天气" (nice weather) triggers the same rule. Multi-character context is not analyzed.
+
+**Experimental scale.** 106 rules, 195 vectors, 13 clusters — insufficient to cover broad semantic scenarios.
+
+**No standard NLP benchmarks.** The system does not use probability distributions; BLEU, ROUGE, and similar metrics are not applicable.
+
+---
+
+## Technical Characteristics
+
+- Fully auditable: every step (character → rule → cell → energy → output) is traceable
+- Autonomous evolution engine: world state evolves continuously during idle, not dependent on user input
+- Rule self-growth: collision patterns recurring ≥3 times auto-crystallize into new rules
+- Ctrl+C auto-saves current state
+- Radical Gray encoding provides Unicode-structure-based initial bit-space distribution for characters
+
+---
+
+## Positioning
+
+Not a: large language model, neural network, probabilistic generative model, word embedding system.
+
+Technically adjacent to: discrete dynamical systems, symbolic reduction over F₂, artificial life simulation, auditable inference engines.
+
+---
 
 ## License
 
