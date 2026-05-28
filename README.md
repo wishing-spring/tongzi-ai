@@ -1,6 +1,6 @@
 # Tongzi (童子) v8.3
 
-**A Zero-Gradient Symbolic Reasoning System**
+**A Zero-Gradient Symbolic Reasoning System AI?**
 
 ---
 
