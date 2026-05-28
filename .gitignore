@@ -1,21 +1,8 @@
-# Private workspace — never track
-MEMORY.md
-memory/
-PROFILE.md
-AGENTS.md
-SOUL.md
-HEARTBEAT.md
-
-# Generated data
-data/
-
-# Temp files
-*.png
-src/_quick_test.py
-src/_test_merge.py
-src/_test_chain.py
-src/_test_output.txt
-
-# Python cache
 __pycache__/
 *.pyc
+screenshot.png
+child_state.json
+live_child_state.json
+test_*.py
+_fix_*.py
+_check_*.py

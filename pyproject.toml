@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "lingxi"
+version = "8.3.0"
+description = "Discrete Structure Reducer — zero-training, zero-gradient, bit-level auditable artificial life"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [{name = "wishing-spring"}]
+keywords = [
+    "discrete-structure",
+    "artificial-life",
+    "bit-vector",
+    "xor-hamming",
+    "self-growth",
+    "zero-gradient",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Life",
+]
+
+[project.optional-dependencies]
+gui = ["tkinter"]
+
+[project.urls]
+Homepage = "https://github.com/wishing-spring/tongzi-ai"
+Repository = "https://github.com/wishing-spring/tongzi-ai"
+
+[tool.setuptools.packages.find]
+where = ["."]

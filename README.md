@@ -1,95 +1,83 @@
-# 童灵 v6.0 — F₂卦元离散动力系统
+# Lingxi v8.3 — Discrete Structure Reducer
 
-基于纯F₂域（GF(2)）运算的离散动力系统。无浮点、无矩阵、无梯度、无词嵌入。28位卦元(GuaYuan)作为统一原子载体，通过XOR碰撞、Hamming距离跃迁、位统计操作实现五层动力学架构与三界管理层。
+**Zero training. Zero gradient. Bit-level auditable. Pure F₂ operations.**
 
-**输入→童子F₂闭壳碰撞→attractor→灵犀五层→657词F₂原生输出**
+A 28-bit artificial life system with child persona (age 10), self-growth,
+dreaming engine, personality filter, and semantic co-occurrence learning.
 
-## 架构
+## Quick Start
 
-```
-输入文字 → [童子F₂池] XOR碰撞·四生态池·连环咬合编码
-                ↓ attractor (28位卦元)
-         [灵犀五层]
-         L1 阴阳对池 (128卦元互易·coherence)
-         L2 世界字团 (1024卦元·三态·做梦·扩散)
-         Φ场 脉络   (Hebbian连接·BFS·衰减)
-         L3 八卦环   (64参考码·Hamming跃迁·Lightning链)
-         L5 定心坠子 (5维价值门控·双画像)
-         L5 YongJiu  (游离卦元·三才检测·双井势·场骤冷)
-                ↓
-         [货柜] body·ghost·ctx 三卦元
-                ↓
-         [词世界] 657词F₂哈希·XOR链式跳→输出
-                
-         [三界天庭] 天界七官·地界三司
-         玉帝·总管 王母·生息 太上·观察 雷部·应急
-         紫微·轨迹 太岁·节律 财部·调度
-         阎罗·裁断 无常·回收 孟婆·清理
+```python
+import lingxi
+lingxi.demo()   # run evidence experiments
+lingxi.start()  # interactive session (GUI if available)
 ```
 
-## 运行
+Or from the command line:
 
 ```bash
-cd src/lingxi_v6
-python demo.py      # 六步全链路演示 + 持久化
-python chat.py       # 交互对话 (输入'天庭'查看管理层)
+pip install .        # zero external dependencies
+python -c "import lingxi; lingxi.demo()"
 ```
 
-**依赖**: Python 3.8+（仅标准库，零外部依赖）
+## Architecture
 
-## 核心特征
+| Layer | Component | Operations |
+|:------|:----------|:-----------|
+| Bit-Vector | `guayuan` | 28-bit XOR, Hamming distance, radical-Gray encoding |
+| Oscillation | `yinyang` | Yin-yang heartbeat drives world-layer evolution |
+| World | `shared_pool` | 195 active stars, 13 clusters, 414 co-occurrence edges |
+| Rules | `rule_tree` | 106 rules, direct substring matching, self-growth via crystallization |
+| Inference | `bagua_core` | 64-cell think-chain engine with shortest-path reasoning |
+| Personality | `tongzi_experience` | 10-year-old filter: 7 allow / 4 block rules |
+| Output | `child_window` / `live_child` | Tkinter GUI or terminal interactive mode |
 
-| 特征 | 实现 |
-|:--|:--|
-| 运算域 | F₂ (GF(2))，28位封闭空间 |
-| 载体 | 28位卦元 — 童子尊碰撞，灵犀尊归属，统一格式天然桥接 |
-| 编码 | 连环咬合哈希 (chain-linked hashing) |
-| 碰撞 | XOR位运算，mask动力学 |
-| 距离 | Hamming距离 (bit_count) |
-| 学习 | Hebbian连接强化 (Φ场) |
-| 记忆 | 长期(累积XOR)+短期(最近5轮)+逻辑骨架(8种关系) |
-| 管理 | 三级共治·季节轮回·冷却防震荡·无为锚点 |
-| 数值 | 零浮点·零矩阵·零梯度·零词嵌入·零外部知识库 |
+## Evidence Experiments
 
-## 关键数据
+Three controlled experiments demonstrating system properties:
 
-- 1500 tick持续运行，无坍缩
-- 生态池固化率100% (hits≥3)
-- YongJiu触发率~33%，骤冷率~11%
-- Φ场连接：39→229→164 (增长后稳定)
-- 四季轮回：春生→夏长→秋收→冬藏，每250tick
+1. **Refuse-to-Answer**: forbidden input reduces to ANNIHILATE
+2. **Separation**: similar characters map to distinct rule paths
+3. **Self-Growth**: repeated collision triggers rule crystallization
 
-## 已知局限
-
-1. **输出非语义** — F₂原生词链跳输出为字词序列（如"壁·河流·北·燥·下降·元"），非自然语言生成。这是F₂域的物理约束：XOR+Hamming不能产生新的语义组合。
-
-2. **无增量学习** — Φ场Hebbian机制仅强化共现连接。系统跑1000 tick和跑10000 tick的结构复杂度增长率趋近于零。
-
-3. **参数经验性** — 所有阈值（L_threshold=0.35、harvest_cycle=100、season=250）均来自试运行调优，无理论推导。
-
-4. **词空间有限** — 657词F₂哈希空间。XOR链跳在低基数词表上存在吸引子坍缩风险。
-
-5. **非通用系统** — 当前为封闭域动力学原型，未接入外部数据或API。不能替代LLM或用于生产任务。
-
-## 文件
-
-```
-src/lingxi_v6/
-├── guayuan.py              # 卦元基础设施 (28位·XOR·Hamming·hash)
-├── tongzi_f2.py            # 童子F₂闭壳碰撞池 (涌·四生态)
-├── l1_yinyang.py           # L1 阴阳对池 (互易·coherence)
-├── l2_world.py             # L2 世界字团 (三态·做梦·扩散)
-├── l3_bagua.py             # L3 八卦环 (64卦·Hamming跃迁·Lightning)
-├── l4_phi.py               # Φ场脉络 (Hebbian·BFS·衰减)
-├── l5_dingxin_yongjiu.py   # 定心坠子(5值门控) + YongJiu(游离探针)
-├── lingxi_fusion.py        # 货柜·全层融合·持久化
-├── word_world.py           # F₂原生词世界 (657词哈希·XOR链跳)
-├── tian_tian.py            # 三界天庭管理层 (十官十职)
-├── demo.py                 # 全链路演示 (6步·save/load)
-├── chat.py                 # 交互对话
-└── __init__.py
+```bash
+python demo_evidence.py
 ```
 
-## 许可
+## System Properties
 
-MIT License
+| Property | Value |
+|:---------|:------|
+| Vector width | 28 bits |
+| Operations | XOR, Hamming, bit_count |
+| Floating-point | None (zero) |
+| Gradients | None (zero) |
+| Word embeddings | None (zero) |
+| External knowledge | None (zero) |
+| Dependencies | Python 3.8+ standard library only |
+| Active entities | 195 stars, 13 clusters, 106 rules |
+| Personality | 10-year-old child, 7 allow / 4 block |
+
+## Files
+
+```
+lingxi/
+  __init__.py           Package entry: start(), demo()
+  guayuan.py            Bit-vector core (28-bit XOR/Hamming)
+  yinyang.py            Yin-yang oscillation engine
+  shared_pool.py        Shared world-layer pool
+  rule_tree.py          Rule match tree (106 rules)
+  semantic_anchors.py   Per-unit cell mapping (0-63)
+  bagua_core.py         Inference think-chain engine
+  bagua_layer.py        Rotating inference grid
+  tongzi_experience.py  Child experience pool + personality filter
+  lingxi_fusion.py      Full-layer orchestration core
+  child_window.py       Tkinter GUI interface
+  live_child.py         Terminal interactive mode
+  demo_evidence.py      Evidence experiments
+  trace.py              Execution trace / audit
+```
+
+## License
+
+MIT
