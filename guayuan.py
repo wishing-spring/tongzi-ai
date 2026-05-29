@@ -3,7 +3,7 @@
 Chars in table: gua = (radical<<16) | (strokes<<8) | (char_hash&0xFF) → same radical = close Hamming.
 Chars NOT in table: fall back to Unicode-position Gray code (honest about coverage).
 """
-import os, sys, time
+import time
 MASK28 = 0x0FFFFFFF
 WIDTH = 28
 
@@ -164,34 +164,39 @@ class SourceGuaLib:
             '圆': 'circle', '方': 'square', '上': 'up', '下': 'down', '前': 'front',
             '后': 'back', '左': 'left', '右': 'right', '中': 'center',
             '直': 'straight', '曲': 'curve', '螺旋': 'spiral', '对称': 'symmetry'
-        }.items(): self.GEOMETRY[k] = gua_hash(v)
+        }.items():
+            self.GEOMETRY[k] = gua_hash(v)
 
         for k, v in {
             '力': 'force', '热': 'heat', '光': 'light', '声': 'sound', '电': 'electric',
             '磁': 'magnetic', '重力': 'gravity', '摩擦': 'friction', '能量': 'energy',
             '熵': 'entropy', '波': 'wave', '速度': 'speed', '惯性': 'inertia',
             '压强': 'pressure', '温度': 'temperature', '质量': 'mass'
-        }.items(): self.PHYSICS[k] = gua_hash(v)
+        }.items():
+            self.PHYSICS[k] = gua_hash(v)
 
         for k, v in {
             '化合': 'combine', '分解': 'decompose', '氧化': 'oxidize', '还原': 'reduce',
             '酸': 'acid', '碱': 'base', '盐': 'salt', '反应': 'reaction',
             '溶液': 'solution', '沉淀': 'precipitate', '金属': 'metal'
-        }.items(): self.CHEMISTRY[k] = gua_hash(v)
+        }.items():
+            self.CHEMISTRY[k] = gua_hash(v)
 
         for k, v in {
             '加': 'add', '减': 'sub', '乘': 'mul', '除': 'div', '等于': 'equal',
             '大于': 'gt', '小于': 'lt', '如果': 'if', '则': 'then', '否则': 'else',
             '且': 'and', '或': 'or', '非': 'not', '推导': 'derive', '因果': 'cause',
             '包含': 'contain', '属于': 'member'
-        }.items(): self.MATH[k] = gua_hash(v)
+        }.items():
+            self.MATH[k] = gua_hash(v)
 
         for k, v in {
             '快乐': 'happy', '悲伤': 'sad', '愤怒': 'angry', '恐惧': 'fear',
             '惊讶': 'surprise', '厌恶': 'disgust', '信任': 'trust', '平静': 'calm',
             '渴望': 'desire', '好奇': 'curious', '满足': 'satisfied', '焦虑': 'anxiety',
             '后悔': 'regret', '愧疚': 'guilt', '期待': 'expect'
-        }.items(): self.PSYCHOLOGY[k] = gua_hash(v)
+        }.items():
+            self.PSYCHOLOGY[k] = gua_hash(v)
 
         for k, v in {
             '春': 'spring', '夏': 'summer', '秋': 'autumn', '冬': 'winter',
@@ -199,23 +204,27 @@ class SourceGuaLib:
             '过去': 'past', '现在': 'now', '未来': 'future',
             '东': 'east', '南': 'south', '西': 'west', '北': 'north',
             '瞬间': 'instant', '永恒': 'eternal'
-        }.items(): self.TIME_SPACE[k] = gua_hash(v)
+        }.items():
+            self.TIME_SPACE[k] = gua_hash(v)
 
         for k, v in {
             '名词': 'noun', '动词': 'verb', '形容词': 'adj', '副词': 'adv',
             '主语': 'subject', '谓语': 'predicate', '宾语': 'object',
             '陈述': 'statement', '疑问': 'question', '感叹': 'exclamation'
-        }.items(): self.LANGUAGE[k] = gua_hash(v)
+        }.items():
+            self.LANGUAGE[k] = gua_hash(v)
 
         for k, v in {
             '善': 'good', '恶': 'evil', '公平': 'fair', '正义': 'justice',
             '自由': 'freedom', '责任': 'duty', '诚实': 'honest', '尊重': 'respect'
-        }.items(): self.SOCIETY[k] = gua_hash(v)
+        }.items():
+            self.SOCIETY[k] = gua_hash(v)
 
         for k, v in {
             '生长': 'grow', '呼吸': 'breathe', '繁殖': 'reproduce', '死亡': 'die',
             '细胞': 'cell', '进化': 'evolve', '基因': 'gene'
-        }.items(): self.BIOLOGY[k] = gua_hash(v)
+        }.items():
+            self.BIOLOGY[k] = gua_hash(v)
 
     def get(self, cat: str, key: str) -> int:
         lib = getattr(self, cat.upper(), {})
@@ -430,4 +439,4 @@ class GuaStore:
 
 Transformer = GuaMorpher
 
-print(f"[guayuan] v8.4 · REAL Kangxi radical encode · ~500 chars · 28-bit")
+print("[guayuan] v8.4 · REAL Kangxi radical encode · ~500 chars · 28-bit")

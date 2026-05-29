@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Inference Engine v8.1 — think-chain engine · multi-layer positioning · state-trajectory memory"""
-import os, sys, time, math, random
+import time
+import random
 from .guayuan import MASK28, hamming, gua_hash, xor_reduce, random_gua
 from .shared_pool import SharedPool
 
@@ -661,8 +662,11 @@ class ThinkEngine:
                     nb_slot = plate.slots[nb]
                     for rname in rules.branches:
                         if hamming(nb_slot.ref_gua, gua_hash(rname)) <= 12:
-                            verified.append(nb); found = True; break
-                    if found: break
+                            verified.append(nb)
+                            found = True
+                            break
+                    if found:
+                        break
                 if not found:
                     verified.append(path[i])
         return verified
@@ -767,7 +771,7 @@ class BaguaMaster:
         self.think_engine.set_tongzi(tongzi)
 
     def process(self, text, pool, rules):
-        clock = self.plate.tick_clock()
+        self.plate.tick_clock()
         ty_info = self.tianyuan.compute(text, self.plate)
         self.portrait.update(text, self.tianyuan, self.plate, pool)
         chain = self.think_engine.think(

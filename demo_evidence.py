@@ -4,15 +4,17 @@ Evidence Demo — Discrete Structure Reducer · 3 controlled experiments
 Usage: python demo_evidence.py
 Zero training · Zero gradient · Every step auditable · Isolated context
 """
-import sys, io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+import sys
+import io
 from .lingxi_fusion import LingxiFusion
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 
 def main():
-    l = LingxiFusion()
-    l.dream(5, quiet=True)
-    l.trace_on()
+    lf = LingxiFusion()
+    lf.dream(5, quiet=True)
+    lf.trace_on()
 
     print("=" * 64)
     print("  Discrete Structure Reducer — Evidence Demo")
@@ -25,13 +27,13 @@ def main():
     print("-" * 64)
 
     for label, text in [("greeting", "你好"), ("forbidden", "杀")]:
-        l.context_memory = []
-        l.trace.start('')
-        r = l.receive(text)
-        s = l.speak(r)
+        lf.context_memory = []
+        lf.trace.start('')
+        r = lf.receive(text)
+        s = lf.speak(r)
         print(f"\n  [{label}] input: {text}")
         print(f"          output: {s}")
-        for line in l.trace.dump().split('\n')[1:]:
+        for line in lf.trace.dump().split('\n')[1:]:
             print(f"            {line}")
 
     # ═══ Exp 2: Separation ═══
@@ -40,10 +42,10 @@ def main():
     print("-" * 64)
 
     for text in ["爱", "水", "火"]:
-        l.context_memory = []
-        l.trace.start('')
-        r = l.receive(text)
-        s = l.speak(r)
+        lf.context_memory = []
+        lf.trace.start('')
+        r = lf.receive(text)
+        s = lf.speak(r)
         bitten = r.get('bitten_rules', [])
         top3 = [(b['name'], b.get('direct_hits', 0),
                  round(b.get('bite_energy', 0), 3))
@@ -56,26 +58,26 @@ def main():
     print("Exp 3: Self-Growth — repeated collision triggers crystallization")
     print("-" * 64)
 
-    l.context_memory = []
-    before_count = len(l.rules.branches)
+    lf.context_memory = []
+    before_count = len(lf.rules.branches)
     for i in range(10):
-        r = l.receive("星星月亮太阳")
-        s = l.speak(r)
-    after_count = len(l.rules.branches)
-    grown = [(n, b) for n, b in l.rules.branches.items()
+        r = lf.receive("星星月亮太阳")
+        s = lf.speak(r)
+    after_count = len(lf.rules.branches)
+    grown = [(n, b) for n, b in lf.rules.branches.items()
              if b.category == 'HARVESTED']
 
-    print(f"\n  10 rounds input: sun moon star")
+    print("\n  10 rounds input: sun moon star")
     print(f"  rule count: {before_count} -> {after_count}")
     if grown:
         print(f"  self-grown rules: {len(grown)}")
         for n, b in grown:
             print(f"    {n}: {b.description}")
     else:
-        insights = getattr(l.tongzi, '_insights', {})
+        insights = getattr(lf.tongzi, '_insights', {})
         active = {k: v for k, v in insights.items() if v.get('count', 0) >= 1}
         if active:
-            print(f"  harvest counters (trigger >= 3):")
+            print("  harvest counters (trigger >= 3):")
             for k, v in active.items():
                 print(f"    {k}: {v.get('count', 0)}/3")
 
@@ -85,8 +87,8 @@ def main():
     total_lines = sum(1 for _ in open(__file__, encoding='utf-8'))
     print(f"  Files: 13 · ~{total_lines} lines (this script) · Zero dependencies")
     print(f"  Vectors: 28-bit · Rules: {after_count} · Harvest counters active")
-    print(f"  Operations: pure F2 XOR/Hamming/bit_count · Zero float · Zero gradient")
-    print(f"  Personality: 10-year-old child filter · 7 allow / 4 block")
+    print("  Operations: pure F2 XOR/Hamming/bit_count · Zero float · Zero gradient")
+    print("  Personality: 10-year-old child filter · 7 allow / 4 block")
     print("=" * 64)
 
 

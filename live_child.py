@@ -4,10 +4,14 @@
 Boot -> Dream -> Speak -> Wait -> Respond -> Dream on
 Ctrl+C to exit (auto-save)
 """
-import sys, os, io, time, threading, json
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-
+import sys
+import os
+import io
+import time
+import threading
 from .lingxi_fusion import LingxiFusion
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 # global control
 running = True

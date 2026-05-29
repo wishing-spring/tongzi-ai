@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """Child Dialog Window — Tkinter GUI · zero deps · v0.6 dream-speak + recall"""
-import sys, os, threading, time
-)
+import sys
+import os
+import threading
+import time
 from .lingxi_fusion import LingxiFusion
 
 try:
@@ -169,10 +171,6 @@ class ChildWindow:
 
     def _append(self, speaker, msg, tag):
         self.chat_area.config(state='normal')
-        FONT = ('Segoe UI', 11)
-        FONT_B = ('Segoe UI', 11, 'bold')
-        FONT_I = ('Segoe UI', 10, 'italic')
-        FONT_S = ('Segoe UI', 9)
 
         if tag == 'user':
             self.chat_area.insert('end', f'\n{speaker}: ', 'user_name')

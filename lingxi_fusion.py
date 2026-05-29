@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """Fusion Core v8.3 — shared-pool orchestration · rule matching · inference projection · oscillation modulation"""
-import os, sys, json, time
-from .guayuan import MASK28, hamming, gua_hash, xor_reduce
+import json
+import time
+from .guayuan import MASK28, gua_hash
 from .shared_pool import SharedPool
 from .yinyang import YinYangEngine
 from .rule_tree import RuleTree
-from .bagua_core import BaguaMaster, BAGUA
+from .bagua_core import BaguaMaster
 from .tongzi_experience import TongziExperience
 from .trace import Trace
 
@@ -84,7 +85,7 @@ class LingxiFusion:
             self.tick += 1
 
             # ① 阴阳心跳驱动
-            yy = self.yinyang.tick_once()
+            self.yinyang.tick_once()
 
             # ② 世界层一帧：阴阳调制 + 规则约束
             heartbeat = self.yinyang.heartbeat()
@@ -591,7 +592,6 @@ class LingxiFusion:
     def speak(self, result: dict) -> str:
         bitten = result.get('bitten_rules', [])
         bagua = result.get('bagua', {})
-        yy = result.get('yy_state', {})
         input_text = result.get('input', '')
 
         # ── 追忆通道：问梦 / 问在想什么 → 直接分享 ──
@@ -602,7 +602,6 @@ class LingxiFusion:
                 return '我' + mems[0] if mems[0].startswith('梦') else mems[0]
             return '我刚才没做什么特别的梦，星星们都安安静静的'
 
-        bias = yy.get('bias_label', '')
         mood = bagua.get('user_mood', '')
         
         # ── 思维链 ──
@@ -728,7 +727,6 @@ class LingxiFusion:
     def save(self, path: str = None) -> str:
         """持久化：规则·世界层·阴阳·童子·上下文"""
         path = path or 'lingxi_v8_state.json'
-        import json
         # 规则——只保存自生长的(HARVESTED类)
         grown_rules = {}
         for n, b in self.rules.branches.items():
@@ -766,7 +764,6 @@ class LingxiFusion:
     def load(self, path: str = None) -> bool:
         """加载持久化状态——恢复梦世界"""
         path = path or 'lingxi_v8_state.json'
-        import json
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 state = json.load(f)
