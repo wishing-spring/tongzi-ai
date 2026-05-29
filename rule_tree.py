@@ -352,25 +352,51 @@ class RuleTree:
 
     def bite(self, pool: SharedPool, tick: int = 0, input_text: str = "") -> list[dict]:
         """
-        规则咬合 v8.2 — 文字直接匹配优先（对照表原理）
-        核心：规则refs里有多少字直接出现在输入中→主权重
-        辅助：星座能量→微调
+        Rule bite v8.4 — REAL F2 vector distance matching.
+        Input chars → gua vectors; rule refs → gua vectors.
+        Match = minimum Hamming distance between input-char vectors and rule-ref vectors.
+        Hamming=0 (same char) → full credit; Hamming≤HALF_W → partial; else → constellation bonus only.
         """
-        bitten = []
+        from .guayuan import gua_hash, hamming
 
+        HALF_W = 14  # half of 28-bit width: threshold for "close" match
+
+        # Pre-compute input gua vectors
+        input_chars = [ch for ch in input_text if ch.strip()]
+        input_guas = [gua_hash(ch) for ch in input_chars]
+
+        bitten = []
         for name, branch in self.branches.items():
             refs = branch.refs
-            ref_total = len(refs)
+            ref_total = max(len(refs), 1)
 
-            # ── 主机制：文字直接匹配 ──
-            direct_hits = 0
+            # ── Convert rule refs to gua vectors ──
+            ref_guas = [(rn, gua_hash(rn)) for rn in refs]
+
+            # ── Main mechanism: F2 Hamming distance matching ──
+            # For each input char, find closest ref by Hamming distance
+            direct_hits = 0      # exact match (Hamming=0)
+            close_hits = 0       # close match (0 < Hamming ≤ HALF_W)
             hit_refs = []
-            for rn in refs:
-                if rn in input_text:
-                    direct_hits += 1
-                    hit_refs.append(rn)
+            total_dist = 0.0     # accumulated distance for energy
 
-            # ── 辅助：星座能量 ──
+            for inp_ch, inp_g in zip(input_chars, input_guas):
+                best_dist = 29  # >28 = no match yet
+                best_ref = ''
+                for rn, r_g in ref_guas:
+                    d = hamming(inp_g, r_g)
+                    if d < best_dist:
+                        best_dist = d
+                        best_ref = rn
+                if best_dist == 0 and best_ref not in hit_refs:
+                    direct_hits += 1
+                    hit_refs.append(best_ref)
+                elif 0 < best_dist <= HALF_W and best_ref not in hit_refs:
+                    close_hits += 1
+                    hit_refs.append(best_ref)
+                total_dist += best_dist / max(len(input_chars), 1)
+
+            # ── Constellation energy (auxiliary) ──
             con_energy = 0.0
             sensed_constellations = set()
             for ref_name in refs:
@@ -379,20 +405,22 @@ class RuleTree:
                 star = pool.get_star(ref_name)
                 if star:
                     sensed_constellations.add(star.constellation)
+            con_energy = con_energy / ref_total
 
-            con_energy = con_energy / max(ref_total, 1)
-
-            # ── 加权公式：有命中必赢无命中 ──
-            # 文字命中 = 主权重（保底）
-            # 星座能量 = 辅助微调（同命中数内排序用）
-            
+            # ── Weighted formula: F2 distance → bite energy ──
+            # Exact char match (Hamming=0) = strongest signal
+            # Close match (same-radical chars) = medium signal
+            # Constellation only = weak signal
             if direct_hits >= 2:
-                bite_energy = 2.0 + direct_hits * 0.3 + con_energy * 0.05
+                bite_energy = 2.0 + direct_hits * 0.3 + close_hits * 0.15 + con_energy * 0.05
             elif direct_hits == 1:
-                bite_energy = 1.0 + con_energy * 0.05
+                bite_energy = 1.0 + close_hits * 0.2 + con_energy * 0.05
+            elif close_hits >= 2:
+                bite_energy = 0.7 + close_hits * 0.1 + con_energy * 0.05
+            elif close_hits == 1:
+                bite_energy = 0.4 + con_energy * 0.05
             else:
-                # 无命中→上限0.5，永远低于有命中的
-                bite_energy = min(0.5, con_energy * 0.02)
+                bite_energy = min(0.3, con_energy * 0.02)
 
             if bite_energy > 0.08:
                 bitten.append({
@@ -401,6 +429,7 @@ class RuleTree:
                     'refs': refs,
                     'bite_energy': round(bite_energy, 3),
                     'direct_hits': direct_hits,
+                    'close_hits': close_hits,
                     'hit_refs': hit_refs,
                     'con_energy': round(con_energy, 3),
                     'constellations': list(sensed_constellations),
